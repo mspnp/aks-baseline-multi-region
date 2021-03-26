@@ -51,7 +51,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 | :construction: | Diagram below does _NOT accurately reflect this architecture_. **Update Pending.** |
 |----------------|:--------------------------|
 
-![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-cluster-mgmnt-n-federation.png)
+![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-baseline-multi-cluster.png)
 
 ## Deploy the reference implementation
 
