@@ -4,8 +4,8 @@ This reference implementation will go over some design decisions from the baseli
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional, small, and fast-growing startup that provides online web services to its clientele on the east coast of the United States. This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
-| 🎓 Foundational Understanding |
-|:------------------------------|
+| 🎓 Foundational Understanding                                                                                                                                                                                                                                                                                                                                                                                                           |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **If you haven't familiarized yourself with the general-purpose [AKS baseline cluster](https://github.com/mspnp/aks-secure-baseline) architecture, you should start there before continuing here.** The architecture rationalized and constructed that implementation is the direct foundation of this body of work. This reference implementation avoids rearticulating points that are already addressed in the AKS baseline cluster. |
 
 The Contoso Bicycle app team that owns the `a0042` workload app is planning to deploy an AKS cluster strategically located in the `East US 2` region as this is where most of their customer base can be found. They will operate this single AKS cluster [following Microsoft's recommended baseline architecture](https://github.com/mspnp/aks-secure-baseline).
@@ -19,7 +19,7 @@ This architectural decision will have multiple implications for the Contoso Bicy
 This project has a companion set of articles that describe challenges, design patterns, and best practices for an AKS multi cluster solution designed to be deployed in multiple region to be highly available. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster for Multi-Region deployments](https://aka.ms/architecture/aks-baseline-multi-region). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 | :construction: | The article series mentioned above has _not yet been published_. |
-|----------------|:--------------------------|
+| -------------- | :--------------------------------------------------------------- |
 
 ## Architecture
 
@@ -33,7 +33,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 
 #### Azure platform
 
-- Azure Kubernetes Service (AKS) v1.19
+- Azure Kubernetes Service (AKS) v1.20
 - Azure Virtual Networks (hub-spoke)
 - Azure Front Door
 - Azure Application Gateway (WAF)
@@ -43,13 +43,13 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 #### In-cluster OSS components
 
 - [Flux GitOps Operator](https://fluxcd.io)
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v1.7/user-guide/kubernetes/)
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-ingress/)
 - [Azure AD Pod Identity](https://github.com/Azure/aad-pod-identity)
 - [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
 | :construction: | Diagram below does _NOT accurately reflect this architecture_. **Update Pending.** |
-|----------------|:--------------------------|
+| -------------- | :--------------------------------------------------------------------------------- |
 
 ![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-baseline-multi-cluster.png)
 
@@ -88,8 +88,8 @@ There is WAF protection enabled on Application Gateway and Azure Front Door. The
 
 While this reference implementation tends to avoid _preview_ features of AKS to ensure you have the best customer support experience; there are some features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. Consider trying out and providing feedback on the following. As these features come out of preview, this reference implementation may be updated to incorporate them.
 
-* [Preview features coming from the AKS Secure Baseline](https://github.com/mspnp/aks-secure-baseline#preview-features)
-* _Currently the Azure Kubernetes Service (AKS) for Multi-Region Deployment does not implement any Preview feature directly_
+- [Preview features coming from the AKS Secure Baseline](https://github.com/mspnp/aks-secure-baseline#preview-features)
+- _Currently the Azure Kubernetes Service (AKS) for Multi-Region Deployment does not implement any Preview feature directly_
 
 ## Next Steps
 

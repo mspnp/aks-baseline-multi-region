@@ -99,7 +99,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.19.6",
+            "defaultValue": "1.20.2",
             "type": "string"
         }
     },
@@ -781,7 +781,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2020-12-01",
+            "apiVersion": "2021-02-01",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
