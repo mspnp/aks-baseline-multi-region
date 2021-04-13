@@ -12,11 +12,11 @@ The Contoso Bicycle app team that owns the `a0042` workload app is planning to d
 
 AKS Baseline clusters are meant to be available from different _Zones_ within the same region. But now they realize that if `East US 2` went fully down, zone coverage is not sufficient. Even though the SLA(s) are acceptable for their business continuity plan, they are starting to think what their options are, and how their stateless application (Application ID: a0042) could increase its availability in case of a complete regional outage. They started conversations with the business unit (BU0001) to increment the number of clusters by one. In other words, they are proposing to move to a multi-cluster infrastructure solution in which multiple instances of the same application could live.
 
-This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about following the baseline twice chaining the region to get a twin infrastructure. They also need to look for how they can efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy to; and many more considerations striving for high availability.
+This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about following the baseline twice chaining the region to get a twin infrastructure. They also need to look for how they can efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy to; and many more considerations striving for higher availability.
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for an AKS multi cluster solution disigned to be deployed in multiple region to be highly available. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster for Multi-Region deployments](https://aka.ms/architecture/aks-baseline-multi-region). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion set of articles that describe challenges, design patterns, and best practices for an AKS multi cluster solution designed to be deployed in multiple region to be highly available. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster for Multi-Region deployments](https://aka.ms/architecture/aks-baseline-multi-region). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 | :construction: | The article series mentioned above has _not yet been published_. |
 |----------------|:--------------------------|
@@ -38,7 +38,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 - Azure Front Door
 - Azure Application Gateway (WAF)
 - Azure Container Registry
-- Azure Monitor Log Analitycs
+- Azure Monitor Log Analytics
 
 #### In-cluster OSS components
 
@@ -73,14 +73,14 @@ The main cost on the current Reference Implementation is related to (in order):
 
 1. Azure Firewall dedicated to control outbound traffic ~35%
 1. Node Pool Virtual Machines used inside the cluster ~30%
-1. AppGateway which control the ingress traffic to the private vnet ~15%
-1. LogAnalitycs ~10%
+1. AppGateway which control the ingress traffic to the private virtual network ~15%
+1. Log Analytics ~10%
 
 Azure Firewall can be a shared resource, and maybe your company already has one and you can reuse. It is not recommended, but if you want to reduce cost, you can delete the Azure Firewall and take the risk.
 
 The Virtual Machines on the AKS Cluster are needed. The Cluster can be shared by several applications. Anyway, you can analyze the size and the amount of nodes. The Reference Implementation has the minimum recommended nodes for production environments, but in a multi-cluster environment when you have at least two clusters, based on your traffic analysis, failover strategy and autoscaling configuration, you choose different numbers.
 
-Keep an eye on LogAnalitycs as time goes by and manage the information which is collected. The main cost is related to data ingestion into the Log Analytics workspace, you can fine tune that.
+Keep an eye on Log Analytics as time goes by and manage the information which is collected. The main cost is related to data ingestion into the Log Analytics workspace, you can fine tune that.
 
 There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost, you can disable these rules. The consequence is that not valid traffic will arrive at Application Gateway using resources instead of being eliminated as soon as possible.
 
