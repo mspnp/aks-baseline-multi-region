@@ -78,7 +78,7 @@ The following two resource groups will be created and populated with networking 
 
 ![Traffic Analytics Geo Map View of the AKS Multi Cluster reference implementation under load. Traffic is coming from a single Azure Front Door POP and is distributed to both regions after the first failover is complete](./images/traffic-analytics-geo-map.gif)
 
-> :bulb: The [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-secure-baseline/blob/main/networking/topology.md). But something that is worth to remember while preparing for a active-active architecture is that the network needs to be right sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _Pods_ to failover a region.
+> :bulb: The [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-secure-baseline/blob/main/networking/topology.md). But something that is worth to remember while preparing for a active/active architecture is that the network needs to be right sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _Pods_ to failover a region.
 
 ### Next step
 
