@@ -42,8 +42,8 @@ The cluster now has [Traefik configured with a TLS certificate](./08-secret-mana
    > In this moment your Ingress Controller (Traefik) is reading your ingress resource object configuration, updating its status, and creating a router to fulfill the new exposed workloads route. Please take a look at this and notice that the address is set with the Internal Load Balancer IP from the configured subnet.
 
    ```bash
-   kubectl get ingress aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_03
-   kubectl get ingress aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl get IngressRoute aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   kubectl get IngressRoute aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 
    > At this point, the route to the workload is established, SSL offloading configured, and a network policy is in place to only allow Traefik to connect to your workload. Therefore, you should expect a `403` HTTP response if you attempt to connect to it directly.
