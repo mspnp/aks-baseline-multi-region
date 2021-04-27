@@ -29,7 +29,7 @@ Following the steps below you will result the certificates needed for Azure Appl
    # call the Let's Encrypt certificate generation script for both PIP FQDNs
    # [Generate the following certificates takes about ten minutes to run.]
    sudo chmod +x ./certs/letsencrypt-pip-cert-generation.sh
-   sudo chmod +x ./certs/autogenerator.sh
+   sudo chmod +x ./certs/authenticator.sh
    ./certs/letsencrypt-pip-cert-generation.sh $APPGW_SUBDOMAIN_BU0001A0042_03 $APPGW_FQDN_BU0001A0042_03 $APPGW_IP_RESOURCE_ID_03 eastus2
    ./certs/letsencrypt-pip-cert-generation.sh $APPGW_SUBDOMAIN_BU0001A0042_04 $APPGW_FQDN_BU0001A0042_04 $APPGW_IP_RESOURCE_ID_04 centralus
    ```
