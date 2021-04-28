@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 SUBDOMAIN=$1
 FQDN=$2
