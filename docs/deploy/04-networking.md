@@ -27,14 +27,6 @@ The following two resource groups will be created and populated with networking 
 
 ## Steps
 
-1. Login into the Azure subscription that you'll be deploying the Azure resources into.
-
-   > :book: The networking team logins into the Azure subscription that will contain the regional hub and spokes. At Contoso Bicycle, all of their regional hubs are in the same, centrally-managed subscription.
-
-   ```bash
-   az login -t $TENANTID_AZURERBAC
-   ```
-
 1. Create the networking hub-spoke resource groups.
 
    > :book: The networking team has all their regional networking hubs and spokes in the following centrally-managed Azure Resource Groups
@@ -54,10 +46,14 @@ The following two resource groups will be created and populated with networking 
    >
    > Note: The subnets for Azure Bastion and on-prem connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
+   Company's Firewall Policy base rules where created as share resource. Each region will have his own Firewall Policy as child of the base Firewall Policies. The child Firewall Policies must be on the same region than the parent.
+
    ```bash
    # [Create the generic hubs takes about five minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionA -p @networking/hub-region.parameters.eastus2.json
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionB -p @networking/hub-region.parameters.centralus.json
+   BASE_FIREWALL_POLICIES_ID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.baseFirewallPoliciesId.value -o tsv)
+
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionA -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.eastus2.json
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionB -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
 
    # [Create the spokes takes about ten minutes to run.]
    RESOURCEID_VNET_HUB_REGIONA=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-regionA --query properties.outputs.hubVnetId.value -o tsv)
@@ -65,13 +61,12 @@ The following two resource groups will be created and populated with networking 
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONA}" @networking/spoke-BU0001A0042.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONB}" @networking/spoke-BU0001A0042.parameters.centralus.json
 
-    # [Enrolling the spokes into the hubs takes about three minutes to run.]
+    # [Enrolling the spokes into the hubs takes about seven minutes to run.]
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionA -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" @networking/hub-region.parameters.eastus2.json
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionB -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" @networking/hub-region.parameters.centralus.json
-   ```
-
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionA -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2  @networking/hub-region.parameters.eastus2.json
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionB -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
+    ```
 ## Preparing for a Failover
 
 > :book: The networking team is now dealing with multiple clusters in different regions. Understanding how the traffic flows at layers 4 and 7 through their deployed networking topology is now more critical than ever. That's why the team is evaluating different tooling that could provide monitoring over their networks.  One of the Azure Monitor products at subscription level is Network Watcher that offers two really interesting features such as NSG Flow Logs and with that [Traffic Analytics](https://docs.microsoft.com/azure/network-watcher/traffic-analytics). The latter can bring some light over the table when it is about analyzing traffic like from where it is being originated, how it is flowing thought the different regions, or how much is benign vs malicious together with many more details at the security and performance level. [With no upfront cost and no termination fees](https://azure.microsoft.com/pricing/details/network-watcher/) the business unit (BU0001) would be charged for collection and processing logs per GB at 10-min or 60-min intervals.
@@ -82,4 +77,4 @@ The following two resource groups will be created and populated with networking 
 
 ### Next step
 
-:arrow_forward: [Generate your client-facing TLS certificate](./04-ca-certificates.md)
+:arrow_forward: [Generate your client-facing TLS certificate](./05-ca-certificates.md)

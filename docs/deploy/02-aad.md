@@ -41,4 +41,4 @@ Following the steps below you will result in an Azure AD configuration that will
 
 ### Next step
 
-:arrow_forward: [Deploy the hub-spoke network topology](./03-networking.md)
+:arrow_forward: [Deploy share resources](./03-cluster-prerequisites.md)

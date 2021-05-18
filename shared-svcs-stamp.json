@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.5",
     "parameters": {
-        "fontDoorBackend": { 
-            "type": "array",
-            "metadata": {
-                "description": "List of backend apps domain name or public ips which will be part of the backend pool"
-            }
-         },
         "location": {
             "defaultValue": "eastus2",
             "type": "string",
@@ -76,9 +70,74 @@
         "acrPrivateDnsZonesName": "privatelink.azurecr.io",
 
         "frontDoorName": "[concat('bicycle', variables('subRgUniqueString'))]",
-        "frontDoorPolicyName": "[concat('policyfd', variables('subRgUniqueString'))]"
+        "frontDoorPolicyName": "[concat('policyfd', variables('subRgUniqueString'))]",
+        "fwPoliciesBaseName": "fw-policies-base"
     },
     "resources": [
+        {
+            "type": "Microsoft.Network/firewallPolicies",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('fwPoliciesBaseName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "tier": "Standard"
+                },
+                "threatIntelMode": "Deny",
+                "threatIntelWhitelist": {
+                    "ipAddresses": []
+                },
+                "dnsSettings": {
+                    "servers": [],
+                    "enableProxy": true
+                }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat(variables('fwPoliciesBaseName'), '/DefaultNetworkRuleCollectionGroup')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[variables('fwPoliciesBaseName')]"
+                    ],
+                    "properties": {
+                        "priority": 200,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "DNS",
+                                        "ipProtocols": [
+                                            "UDP"
+                                        ],
+                                        "sourceAddresses": [
+                                            "*"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationAddresses": [
+                                            "*"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "53"
+                                        ]
+                                    }
+                                ],
+                                "name": "org-wide-allowed",
+                                "priority": 100
+                            }
+                        ]
+                    }
+                }
+          ]
+        },
         {
             "type": "Microsoft.Network/privateDnsZones",
             "apiVersion": "2020-06-01",
@@ -160,24 +219,6 @@
             "plan": {
                 "name": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
                 "product": "OMSGallery/ContainerInsights",
-                "promotionCode": "",
-                "publisher": "Microsoft"
-            }
-        },
-        {
-            "type": "Microsoft.OperationsManagement/solutions",
-            "apiVersion": "2015-11-01-preview",
-            "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            ],
-            "properties": {
-                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            },
-            "plan": {
-                "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-                "product": "OMSGallery/AzureAppGatewayAnalytics",
                 "promotionCode": "",
                 "publisher": "Microsoft"
             }
@@ -390,19 +431,15 @@
                     {
                         "name": "MultiClusterBackendPool",
                         "properties": {
-                            "copy": [
-                               {
-                                    "name": "backends",
-                                    "count": "[length(parameters('fontDoorBackend'))]",
-                                    "input": {
-                                        "address": "[parameters('fontDoorBackend')[copyIndex('backends')]]",
-                                        "httpPort": 80,
-                                        "httpsPort": 443,
-                                        "priority": 1,
-                                        "weight": 50,
-                                        "enabledState": "Enabled",
-                                        "backendHostHeader": "[parameters('fontDoorBackend')[copyIndex('backends')]]"
-                                    }
+                            "backends":[
+                                {
+                                "address": "bicycle.cloudapp.azure.com",
+                                "httpPort": 80,
+                                "httpsPort": 443,
+                                "priority": 1,
+                                "weight": 50,
+                                "enabledState": "Enabled",
+                                "backendHostHeader": "bicycle.cloudapp.azure.com"
                                 }
                             ],
                             "healthProbeSettings": {
@@ -509,6 +546,18 @@
         "fqdn": {
             "type": "string",
             "value": "[concat(variables('frontDoorName'), '.azurefd.net')]"
+        },
+        "frontDoorName": {
+            "type": "string",
+            "value": "[variables('frontDoorName')]"
+        },
+        "frontDoorBackendPoolName": {
+            "type": "string",
+            "value": "MultiClusterBackendPool"
+        },
+        "baseFirewallPoliciesId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesBaseName'))]"
         }
     }
 }

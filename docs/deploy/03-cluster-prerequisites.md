@@ -12,8 +12,17 @@ Following the steps below will result in the provisioning of the shared Azure re
 | Azure Private Dns Zone        | The Private Dns Zone for the Azure Container Registry. Later cluster can link their vNets to it                                                                                                                                                                                                     |
 | Azure Log Analytics Workspace | A Centralized Log Analytics workspace where all the logs are collected                                                                                                                                                                                                                              |
 | Azure Front Door              | Azure Front Door routes traffic to the fastest and available (healthy) backend. Public IP FQDN(s) emitted by the spoke network deployments are being configured in advance as AFD's backends. These regional PIP(s) are later assigned to the Azure Application Gateways Frontend Ip Configuration. |
+| Azure Firewall Policy base rules   | Firewall rules which apply to the complete organization |
 
 ## Steps
+
+1. Login into the Azure subscription that you'll be deploying the Azure resources into.
+
+   > :book: The networking team logins into the Azure subscription. At Contoso Bicycle, all of their regional hubs are in the same, centrally-managed subscription.
+
+   ```bash
+   az login -t $TENANTID_AZURERBAC
+   ```
 
 1. Create the shared services resource group for your AKS clusters.
 
@@ -35,6 +44,7 @@ Following the steps below will result in the provisioning of the shared Azure re
 > | [Log Analytics in Azure Monitor](https://docs.microsoft.com/azure/azure-monitor/logs/log-analytics-overview) |              |     ✓     |            |
 > | [Azure Container Registry](https://docs.microsoft.com/azure/container-registry/)                             |              |     ✓     |     ✓      |
 > | [Azure Front Door](https://docs.microsoft.com/azure/frontdoor/front-door-overview)                           |      ✓       |           |            |
+> | [Azure Firewall Policy](https://docs.microsoft.com/en-us/azure/firewall-manager/policy-overview)             |              |   ✓       |            |
 >
 > **Azure Monitor logs solution**
 >
@@ -65,9 +75,9 @@ Following the steps below will result in the provisioning of the shared Azure re
 > :book: The app team is about to deploy Azure Application instances in every region ahead of their corresponding cluster. It represents a new challenge for them as they need to globally manage the traffic from their clients, and route to the different regions to achieve enhanced reliability; aligning to the [Geode cloud design pattern](https://docs.microsoft.com/azure/architecture/patterns/geodes). They plan to have both regions initially active, and respond from the one which is closest to the client sending the HTTP requests. Therefore, it results in an active/active availability strategy, but they need to failover to a single region in case of a region outage. As a consequence of this last requirement, the load balancing can not be a simple round robin over the closest regions, but it also needs to be aware of the health of their backends, and derive the traffic accordingly. Two well known Azure services can perform Multi-Geo Redundancy and Closest Region Routing, they are: Azure Front Door and Azure Traffic Manager. To make final decision between these two, the Contoso organization is also seeing added benefits in Azure Front Door like better performance at the TLS negotiation, rate limiting capability and IP ACL-ing.
 
 ```bash
-az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2 fontDoorBackend="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
+az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2
 ```
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS clusters](./06-aks-cluster.md)
+:arrow_forward: [Deploy the hub-spoke network topology](./04-networking.md)
