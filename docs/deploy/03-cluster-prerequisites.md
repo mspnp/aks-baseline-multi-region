@@ -1,6 +1,6 @@
 # Deploy the AKS cluster prerequisites and shared services
 
-In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follows the next step in the [AKS baseline multi cluster reference implementation](/README.md) which is deploying the shared service instances.
+In the prior step, you [prep for Azure Active Directory integration](./02-aad.md); now follows the next step in the [AKS baseline multi cluster reference implementation](/README.md) which is deploying the shared service instances.
 
 ## Expected results
 
@@ -12,7 +12,7 @@ Following the steps below will result in the provisioning of the shared Azure re
 | Azure Private Dns Zone        | The Private Dns Zone for the Azure Container Registry. Later cluster can link their vNets to it                                                                                                                                                                                                     |
 | Azure Log Analytics Workspace | A Centralized Log Analytics workspace where all the logs are collected                                                                                                                                                                                                                              |
 | Azure Front Door              | Azure Front Door routes traffic to the fastest and available (healthy) backend. Public IP FQDN(s) emitted by the spoke network deployments are being configured in advance as AFD's backends. These regional PIP(s) are later assigned to the Azure Application Gateways Frontend Ip Configuration. |
-| Azure Firewall Policy base rules   | Firewall rules which apply to the complete organization |
+| Azure Firewall Policy base rules   | Azure Firewall rules that apply at the entire organization level. These rules are typically cluster agnostic, so they can be shared by them all. |
 
 ## Steps
 

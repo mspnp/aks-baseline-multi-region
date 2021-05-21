@@ -101,7 +101,7 @@ jobs:
           cluster-manifests/base/cluster-baseline-settings/ns.yaml
           ${{ steps.aks-kustomize-region1.outputs.manifestsBundle }}
 
-    - name: Enrol Region 1 cluster on front-door
+    - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 1 
       id: enrol-cluster-1
       if: success() && env.DEPLOY_REGION1 == 'true'
       uses: Azure/cli@v1.0.0
@@ -162,7 +162,7 @@ jobs:
           cluster-manifests/base/cluster-baseline-settings/ns.yaml
           ${{ steps.aks-kustomize-region2.outputs.manifestsBundle }}
 
-    - name: Enrol Region 2 cluster on front-door
+    - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 2
       id: enrol-cluster-2
       if: success() && env.DEPLOY_REGION2 == 'true'
       uses: Azure/cli@v1.0.0

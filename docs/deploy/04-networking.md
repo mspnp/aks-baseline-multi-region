@@ -1,6 +1,6 @@
 # Deploy the Hub-Spoke Network Topology
 
-In the prior step, you've set up an Azure AD tenant to fullfil your [cluster's control plane (Kubernetes Cluster API) authorization](./02-aad.md) needs for this reference implementation deployment. Now we will start with our first Azure resource deployment, the network resources.
+In the prior step, you've set up an Azure AD tenant to fullfil your [deployed share resources](./03-cluster-prerequisites.md) needs for this reference implementation deployment. Now we will start with the network resources.
 
 ## Subscription and resource group topology
 
@@ -46,7 +46,7 @@ The following two resource groups will be created and populated with networking 
    >
    > Note: The subnets for Azure Bastion and on-prem connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
-   Company's Firewall Policy base rules where created as share resource. Each region will have his own Firewall Policy as child of the base Firewall Policies. The child Firewall Policies must be on the same region than the parent.
+   The Azure Firewall Base Policies for the Contoso organization were created by the networking team as another shared resource. This way, they became available for each regional cluster that requires inherit them and create children Azure Firewall policy rules on top of. An important Azure Resource Manager requirement by the time writing this is that all derivates Azure Firewall Policies must reside on the same parent's location.
 
    ```bash
    # [Create the generic hubs takes about five minutes to run.]

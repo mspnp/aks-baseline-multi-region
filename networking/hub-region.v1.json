@@ -66,13 +66,13 @@
         "baseFirewallPoliciesId":{
             "type": "string",
             "metadata": {
-                "description": "The org base firewall network policies id"
+                "description": "The Azure Base Policy resource id"
             }
         },
         "firewallPolicyLocation":{
             "type": "string",
             "metadata": {
-                "description": "parent policy must be in the sane region as child policy"
+                "description": "The Azure Base Policy location that will be used for the children policies"
             }
         }
     },
