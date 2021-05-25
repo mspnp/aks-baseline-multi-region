@@ -27,13 +27,10 @@ az storage blob upload \
  --auth-mode key
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-sudo certbot certonly --manual --manual-auth-hook "${DIR}/authenticator.sh $STORAGE_ACCOUNT_NAME $STORAGE_CONNECTION_STRING" -d $FQDN
+certbot certonly --manual --manual-auth-hook "${DIR}/authenticator.sh $STORAGE_ACCOUNT_NAME $STORAGE_CONNECTION_STRING" -d $FQDN --config-dir ./certs/output/etc/letsencrypt --work-dir ./certs/output/var/lib/letsencrypt --logs-dir ./certs/output/var/log/letsencrypt
 
-sudo cp /etc/letsencrypt/live/$FQDN/privkey.pem .
-sudo cp /etc/letsencrypt/live/$FQDN/cert.pem .
-sudo cp /etc/letsencrypt/live/$FQDN/chain.pem .
-openssl pkcs12 -export -out $SUBDOMAIN.pfx -inkey privkey.pem -in cert.pem -certfile chain.pem -passout pass:
+openssl pkcs12 -export -out $SUBDOMAIN.pfx -inkey ./certs/output/etc/letsencrypt/live/$FQDN/privkey.pem -in ./certs/output/etc/letsencrypt/live/$FQDN/cert.pem -certfile ./certs/output/etc/letsencrypt/live/$FQDN/chain.pem -passout pass:
 
 echo "Deleting resources"
 az group delete -n $RGNAME --yes
-rm test.txt privkey.pem cert.pem chain.pem
+rm -rf ./certs/output ./test.txt
