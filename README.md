@@ -57,9 +57,9 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 
 - [ ] Begin by ensuring you [install and meet the prerequisites](./docs/deploy/01-prerequisites.md)
 - [ ] [Plan your Azure Active Directory integration](./docs/deploy/02-aad.md)
-- [ ] [Build the hub-spoke network](./docs/deploy/03-networking.md)
-- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/deploy/04-ca-certificates.md)
-- [ ] [Deploy the shared services for your clusters](./docs/deploy/05-cluster-prerequisites.md)
+- [ ] [Deploy the shared services for your clusters](./docs/deploy/03-cluster-prerequisites.md)
+- [ ] [Build the hub-spoke network](./docs/deploy/04-networking.md)
+- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/deploy/05-ca-certificates.md)
 - [ ] [Deploy the two AKS clusters and supporting services](./docs/deploy/06-aks-cluster.md)
 - [ ] Just like the cluster, there are [workload prerequisites to address](./docs/deploy/07-workload-prerequisites.md)
 - [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/deploy/08-secret-managment-and-ingress-controller.md)
