@@ -322,7 +322,7 @@
         {
             "name": "PodFailedScheduledQuery",
             "type": "microsoft.insights/scheduledqueryrules",
-            "location": "global",
+            "location": "[parameters('location')]",
             "apiVersion": "2021-02-01-preview",
             "tags": {},
             "properties": {

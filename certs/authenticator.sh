@@ -1,16 +1,11 @@
 #!/bin/bash
 
 STORAGE_ACCOUNT_NAME=$1
-STORAGE_CONNECTION_STRING=$2
 
-echo $CERTBOT_VALIDATION>$CERTBOT_TOKEN.txt
+echo $CERTBOT_VALIDATION>${CERTBOT_TOKEN}.txt
 
-az storage blob upload \
- --connection-string $STORAGE_CONNECTION_STRING \
- --account-name $STORAGE_ACCOUNT_NAME \
- --container-name verificationdata \
- --name ${CERTBOT_TOKEN}.txt \
- --file ./${CERTBOT_TOKEN}.txt \
- --auth-mode key
+echo "Uploading validation token to $STORAGE_ACCOUNT_NAME"
+
+az storage blob upload --account-name $STORAGE_ACCOUNT_NAME -c \$web -n "${CERTBOT_TOKEN}" -f "./${CERTBOT_TOKEN}.txt" --auth-mode key --only-show-errors
 
 rm ${CERTBOT_TOKEN}.txt
