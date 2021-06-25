@@ -17,7 +17,7 @@ echo "Creating temporary Resource Group $RGNAME"
 az group create -n $RGNAME -l $LOCATION
 
 echo "Deploying Azure resources used in validation; this may take 20 minutes."
-az deployment group create -g $RGNAME -u "https://github.com/mspnp/letsencrypt-pip-cert-generation/blob/a4f89d43004d4250af02c2bc2194d62467690422/resources-stamp.json" -n $SUBDOMAIN -p location=${LOCATION} subdomainName=${SUBDOMAIN} ipResourceId=${IP_RESOURCE_ID}
+az deployment group create -g $RGNAME -u "https://raw.githubusercontent.com/mspnp/letsencrypt-pip-cert-generation/a4f89d43004d4250af02c2bc2194d62467690422/resources-stamp.json" -n $SUBDOMAIN -p location=${LOCATION} subdomainName=${SUBDOMAIN} ipResourceId=${IP_RESOURCE_ID}
 
 STORAGE_ACCOUNT_NAME=$(az deployment group show -g $RGNAME -n $SUBDOMAIN --query properties.outputs.storageAccountName.value -o tsv)
 
