@@ -18,9 +18,6 @@ This architectural decision will have multiple implications for the Contoso Bicy
 
 This project has a companion set of articles that describe challenges, design patterns, and best practices for an AKS multi cluster solution designed to be deployed in multiple region to be highly available. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster for Multi-Region deployments](https://aka.ms/architecture/aks-baseline-multi-region). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
-| :construction: | The article series mentioned above has _not yet been published_. |
-| -------------- | :--------------------------------------------------------------- |
-
 ## Architecture
 
 **This architecture is infrastructure focused**, more so than on workload. It concentrates on two AKS clusters, including concerns like multi-region deployments, the desired state of the clusters, geo-replication, network topologies, and more.
@@ -47,9 +44,6 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 - [Azure AD Pod Identity](https://github.com/Azure/aad-pod-identity)
 - [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
-
-| :construction: | Diagram below does _NOT accurately reflect this architecture_. **Update Pending.** |
-| -------------- | :--------------------------------------------------------------------------------- |
 
 ![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-baseline-multi-cluster.png)
 
