@@ -6,3 +6,10 @@ resources:
 - aad-pod-identity.yaml
 - akv-secrets-store-csi.yaml
 - kured.yaml
+images:
+- name: docker.io/weaveworks/kured
+  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/weaveworks/kured
+- name: docker.io/fluxcd/flux
+  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/fluxcd/flux
+- name: docker.io/library/memcached
+  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/library/memcached

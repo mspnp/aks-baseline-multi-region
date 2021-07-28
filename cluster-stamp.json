@@ -710,7 +710,8 @@
             "name": "EnsureClusterIdentityHasRbacToPullAcr",
             "apiVersion": "2020-06-01",
             "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]"
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]",
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "resourceGroup": "[variables('containerRegistryResourceGroup')]",
             "properties": {
@@ -722,12 +723,12 @@
                         {
                             "type": "Microsoft.Authorization/roleAssignments",
                             "apiVersion": "2020-04-01-preview",
-                            "name": "[guid(variables('containerRegistryName'), variables('acrPullRole'), variables('clusterControlPlaneIdentityName'))]",
+                            "name": "[guid('Microsoft.Authorization/', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole'))]",
                             "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('containerRegistryName'))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('acrPullRole')]",
                                 "description": "Allows cluster identity to pull container images from this container registry.",
-                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))).principalId]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-12-01').identityProfile.kubeletidentity.objectId]",
                                 "principalType": "ServicePrincipal"
                             }
                         }
