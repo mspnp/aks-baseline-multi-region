@@ -119,7 +119,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         ```bash
         ACR_NAME=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
-        sed -i -e "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME}/" cluster-manifests/base/cluster-baseline-settings/kustomization.yaml
+        find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME}/" {} +
         ```
 
     1.  The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
