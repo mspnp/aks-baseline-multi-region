@@ -127,7 +127,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         > :book: The app team monitors the workflow execution as this is impacting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
-        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "setup GitHub CD workflow" && git push origin main
+        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize manifests, flux and setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
