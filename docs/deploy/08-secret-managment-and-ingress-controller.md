@@ -73,13 +73,11 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 1. Install the Traefik Ingress Controller.
 
-   > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
-   > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](./workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the URL below to point to yours as well.
-
-   :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
+   > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution. Before going to production, we ensure the image reference comes from your Azure Container Registry by running the sed command that updates the `image:` value to reference your container registry instead of the default public container registry.
 
    ```bash
+   sed -i -e "s/docker.io/${ACR_NAME}.azurecr.io/" workload/traefik-region1.yaml
    kubectl apply -f ./workload/traefik-region1.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
@@ -145,6 +143,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    EOF
 
    # Install the Traefik Ingress Controller in the second region
+   sed -i -e "s/docker.io/${ACR_NAME}.azurecr.io/" workload/traefik-region2.yaml
    kubectl apply -f ./workload/traefik-region2.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
 
    # Wait for Traefik to be ready.
