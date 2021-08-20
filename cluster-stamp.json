@@ -1708,14 +1708,14 @@
             "type": "Microsoft.Authorization/policyAssignments",
             "apiVersion": "2020-03-01",
             "name": "[variables('policyAssignmentNameEnforceImageSource')]",
-            "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.",
+            "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level.",
             "properties": {
                 "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdEnforceImageSource'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
                 "policyDefinitionId": "[variables('policyResourceIdEnforceImageSource')]",
                 "parameters": {
                     "allowedContainerImagesRegex": {
-                        "value": "[concat(variables('containerRegistryName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$')]"
+                        "value": "[concat(variables('containerRegistryName'),'\\.azurecr\\.io\\/.+$|mcr\\.microsoft\\.com\\/.+$')]"
                     },
                     "excludedNamespaces": {
                         "value": [
