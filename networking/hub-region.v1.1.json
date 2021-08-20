@@ -704,9 +704,7 @@
                                         ],
                                         "fqdnTags": [],
                                         "webCategories": [],
-                                        "targetFqdns": [
-                                            "docker.io"
-                                        ],
+                                        "targetFqdns": [],
                                         "targetUrls": [],
                                         "terminateTLS": false,
                                         "sourceAddresses": [],
