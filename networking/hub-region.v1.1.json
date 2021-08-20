@@ -692,26 +692,6 @@
                                         "sourceIpGroups": [
                                             "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                         ]
-                                    },
-                                    {
-                                        "ruleType": "ApplicationRule",
-                                        "name": "pull-docker-library-traefik-image",
-                                        "protocols": [
-                                            {
-                                                "protocolType": "Https",
-                                                "port": 443
-                                            }
-                                        ],
-                                        "fqdnTags": [],
-                                        "webCategories": [],
-                                        "targetFqdns": [],
-                                        "targetUrls": [],
-                                        "terminateTLS": false,
-                                        "sourceAddresses": [],
-                                        "destinationAddresses": [],
-                                        "sourceIpGroups": [
-                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                        ]
                                     }
                                 ],
                                 "name": "Flux-Requirements",
