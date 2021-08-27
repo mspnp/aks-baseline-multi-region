@@ -721,25 +721,6 @@
                                 "rules": [
                                     {
                                         "ruleType": "NetworkRule",
-                                        "name": "ntp",
-                                        "ipProtocols": [
-                                            "UDP"
-                                        ],
-                                        "sourceAddresses": [],
-                                        "sourceIpGroups": [
-                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                        ],
-                                        "destinationAddresses": [
-                                            "*"
-                                        ],
-                                        "destinationIpGroups": [],
-                                        "destinationFqdns": [],
-                                        "destinationPorts": [
-                                            "123"
-                                        ]
-                                    },
-                                    {
-                                        "ruleType": "NetworkRule",
                                         "name": "pod-to-api-server",
                                         "ipProtocols": [
                                             "TCP"
