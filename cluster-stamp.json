@@ -740,7 +740,7 @@
         {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2020-05-01",
-            "name": "[concat('nodepool-to-acr', '-', variables('vnetName'), '-', variables('subnetName'))]",
+            "name": "[concat('acr-to-', variables('vnetName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [],
             "properties": {
