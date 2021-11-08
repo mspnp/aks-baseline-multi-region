@@ -125,7 +125,6 @@
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
-        "subnetName": "snet-clusternodes",
         "clusterIdentityDeploymentName": "[concat('EnsureClusterIdentityHasRbacToSelfManagedResources-', variables('clusterName'))]",
         "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-ingressservices')]",
 
@@ -766,7 +765,7 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', concat('nodepool-to-acr', '-', variables('vnetName'), '-', variables('subnetName')))]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('acr-to-', variables('vnetName')))]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [
