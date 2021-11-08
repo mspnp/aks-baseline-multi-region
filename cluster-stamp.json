@@ -125,6 +125,8 @@
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
+        "subnetName": "snet-clusternodes",
+        "clusterIdentityDeploymentName": "[concat('EnsureClusterIdentityHasRbacToSelfManagedResources-', parameters('location'))]",
         "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-ingressservices')]",
 
         "agwName": "[concat('apw-', variables('clusterName'))]",
@@ -636,7 +638,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "name": "EnsureClusterIdentityHasRbacToSelfManagedResources",
+            "name": "[variables('clusterIdentityDeploymentName')]",
             "apiVersion": "2020-06-01",
             "dependsOn": [
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]"
@@ -738,7 +740,7 @@
         {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2020-05-01",
-            "name": "nodepool-to-acr",
+            "name": "[concat('nodepool-to-acr', '-', variables('vnetName'), '-', variables('subnetName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [],
             "properties": {
@@ -764,7 +766,7 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepool-to-acr')]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('nodepool-to-acr', '-', variables('vnetName'), '-', variables('subnetName')))]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [
@@ -788,7 +790,7 @@
                 "Application identifier": "[variables('appId')]"
             },
             "dependsOn": [
-                "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
+                "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', variables('clusterIdentityDeploymentName'))]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameAKSLinuxRestrictive'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceHttpsIngress'))]",
@@ -1761,3 +1763,4 @@
         }
     }
 }
+
