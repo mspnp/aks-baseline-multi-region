@@ -15,8 +15,8 @@ Now that [the AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
    ```bash
    KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
-   az keyvault set-policy --certificate-permissions import list get --object-id $(az ad signed-in-user show --query 'objectId' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_03
-   az keyvault set-policy --certificate-permissions import list get --object-id $(az ad signed-in-user show --query 'objectId' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_04
+   az keyvault set-policy --certificate-permissions import list get --object-id $(az ad signed-in-user show --query 'id' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_03
+   az keyvault set-policy --certificate-permissions import list get --object-id $(az ad signed-in-user show --query 'id' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_04
    ```
 
 1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
@@ -35,8 +35,8 @@ Now that [the AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
    > The Azure Key Vault Policy for your user was a temporary policy to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these access policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies).
 
    ```bash
-   az keyvault delete-policy --object-id $(az ad signed-in-user show --query 'objectId' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_03
-   az keyvault delete-policy --object-id $(az ad signed-in-user show --query 'objectId' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_04
+   az keyvault delete-policy --object-id $(az ad signed-in-user show --query 'id' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_03
+   az keyvault delete-policy --object-id $(az ad signed-in-user show --query 'id' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_04
    ```
 
 ## Check Azure Policies are in place

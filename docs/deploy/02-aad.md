@@ -24,20 +24,20 @@ Following the steps below you will result in an Azure AD configuration that will
    # create a single admin for both clusters
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
    AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a0042-admin
-   AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-login --password ChangeMebu0001a0042AdminChangeMe --query objectId -o tsv)
+   AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0042AdminChangeMe --query id -o tsv)
 
    # create the admin groups
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
-   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query objectId -o tsv)
-   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query objectId -o tsv)
+   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
+   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
 
    # assign the admin as new member in both groups
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203 --member-id $AADOBJECTID_USER_CLUSTERADMIN
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204 --member-id $AADOBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role bindings in Kubernetes. For more information, please refer to our [AKS Baseline](https://github.com/mspnp/aks-secure-baseline).
+   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role bindings in Kubernetes. For more information, please refer to our [AKS Baseline](https://github.com/mspnp/aks-baseline).
 
 ### Next step
 

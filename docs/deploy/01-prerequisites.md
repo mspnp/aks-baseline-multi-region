@@ -4,6 +4,10 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 
 ## Steps
 
+1. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) (must be at least 2.37), or you can perform this from Azure Cloud Shell by clicking below.
+
+   [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
+
 1. Login into your Azure subscription, and save your Azure subscription's tenant id.
 
    > :warning: The user or service principal initiating the deployment process _must_ have the following minimal set of Azure Role-Based Access Control (RBAC) roles:
@@ -46,10 +50,6 @@ This is the starting point for the instructions on deploying the [AKS baseline m
    ```
 
    :warning: If the tenant highlighted in red is not correct, start over by login into the proper Azure Directory Tenant for Kubernetes Cluster API authorization.
-
-1. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
-
-   [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 
