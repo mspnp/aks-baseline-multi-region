@@ -93,7 +93,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.22.2",
+            "defaultValue": "1.22.11",
             "type": "string"
         }
     },
