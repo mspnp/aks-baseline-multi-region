@@ -16,6 +16,39 @@ Following the steps below you will result in an Azure AD configuration that will
 
 > :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
 
+1. Login into your Azure subscription, and save your Azure subscription's tenant id.
+
+   ```bash
+   az login
+   TENANTID_AZURERBAC=$(az account show --query tenantId -o tsv)
+   TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
+   ```
+
+   > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
+
+1. Validate your saved Azure subscription's tenant id is correct
+
+   ```bash
+   echo "${TENANTS}" | grep -z ${TENANTID_AZURERBAC}
+   ```
+
+   :warning: Do not procced if the tenant highlighted in red is not correct. Start over by `az login` into the proper Azure subscription.
+
+1. From the list printed in the previous step, select an Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication and login into.
+
+   ```bash
+   az login --allow-no-subscriptions -t <Replace-With-ClusterApi-AzureAD-TenantId>
+   ```
+
+1. Validate that the new saved tenant id is correct one for Kubernetes Cluster API authorization
+
+   ```bash
+   TENANTID_K8SRBAC=$(az account show --query tenantId -o tsv)
+   echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC}
+   ```
+
+   :warning: If the tenant highlighted in red is not correct, start over by login into the proper Azure Directory Tenant for Kubernetes Cluster API authorization.
+
 1. Create a single "break-glass" cluster administrator user for your AKS clusters, and add to both cluster admin security groups being created that are going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
    :book: The app team requested a single admin user that needs to have access in both clusters. The Azure AD Admin team create two different groups, one per cluster to home the new admin.

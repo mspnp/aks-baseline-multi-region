@@ -14,7 +14,7 @@
 #
 # Take into account the DEPLOY_REGION1 and DEPLOY_REGION2 env variables. If we want to add a new region, the ideal situation is not deploy the already working clusters. Adding a value different of true will skip the specific region steps.
 # Changing the cluster stamp file is expected to be applied on all the regions
-name: Deploy AKS Secure Baseline clusters stamp and Flux in different regions
+name: Deploy AKS baseline cluster stamps and bootstrap in different regions
 
 on:
   push:
