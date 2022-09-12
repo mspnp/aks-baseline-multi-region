@@ -63,7 +63,7 @@ jobs:
          az group create --name rg-bu0001a0042-03 --location eastus2
          az deployment group create --resource-group rg-bu0001a0042-03 \
             --template-file "cluster-stamp.json" \
-             --parameters @azuredeploy.parameters.eastus2.json \
+            --parameters @azuredeploy.parameters.eastus2.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
@@ -117,8 +117,8 @@ jobs:
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 2
       id: aks-cluster-region2
-      uses: Azure/cli@v1.0.0
       if: success() && env.DEPLOY_REGION2 == 'true'
+      uses: Azure/cli@v1.0.0
       with:
         inlineScript: |
          az group create --name rg-bu0001a0042-04 --location centralus
@@ -144,8 +144,8 @@ jobs:
     # NOTE: you could consider using fluxctl action instead. That could help on deploying Flux from a single step instead of baking and then deploying as demonstrated in here.
     - name: Bake manifest - Region 2
       id: aks-kustomize-region2
-      uses: azure/k8s-bake@v1
       if: success() && env.DEPLOY_REGION2 == 'true'
+      uses: azure/k8s-bake@v1
       with:
         renderEngine: 'kustomize'
         kustomizationPath: 'cluster-manifests/region2/bootstrapping'

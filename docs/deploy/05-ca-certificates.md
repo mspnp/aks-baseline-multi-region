@@ -8,8 +8,8 @@ Following the steps below you will result the certificates needed for Azure Appl
 
 | Object                                     | Purpose                                                                                                                                          |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Two Azure Application Gateway certificates | They are TLS certificates emitted by Let's Encrypt for the Public Ip FQDNs and served by the Azure Application Gateway instances in each region  |
-| An AKS ingress controller certificate     | It is a self-signed wildcard cert for TLS on the cluster ingress controller.                                                            |
+| Two Azure Application Gateway certificates | They are TLS certificates emitted by Let's Encrypt for the Public IP FQDNs and served by the Azure Application Gateway instances in each region. |
+| An AKS ingress controller certificate      | It is a self-signed wildcard cert for TLS on the cluster ingress controller.                                                                     |
 
 ## Steps
 
@@ -36,8 +36,8 @@ Following the steps below you will result the certificates needed for Azure Appl
    APPGW_SUBDOMAIN_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.subdomainName.value -o tsv)
    APPGW_SUBDOMAIN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.subdomainName.value -o tsv)
 
-   APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64=$(cat ${APPGW_SUBDOMAIN_BU0001A0042_03}.pfx | base64 | tr -d '\n')
-   APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64=$(cat ${APPGW_SUBDOMAIN_BU0001A0042_04}.pfx | base64 | tr -d '\n')
+   export APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB=$(cat ${APPGW_SUBDOMAIN_BU0001A0042_03}.pfx | base64 | tr -d '\n')
+   export APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB=$(cat ${APPGW_SUBDOMAIN_BU0001A0042_04}.pfx | base64 | tr -d '\n')
    ```
 
 1. Generate the wildcard certificate for the AKS ingress controller.
@@ -56,8 +56,18 @@ Following the steps below you will result the certificates needed for Azure Appl
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the public certificate (as `.crt` or `.cer`) to be Base64 encoded for proper storage in Key Vault later.
 
    ```bash
-   AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
+   export AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
    ```
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 
