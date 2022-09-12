@@ -20,7 +20,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
    ```bash
    az login
-   TENANTID_AZURERBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   export TENANTID_AZURERBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
    TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
    ```
 
@@ -45,7 +45,7 @@ Following the steps below you will result in an Azure AD configuration that will
 1. Validate that the new saved tenant id is correct one for Kubernetes Cluster API authorization
 
    ```bash
-   TENANTID_K8SRBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   export TENANTID_K8SRBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
    echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC_AKS_MRB}
    ```
 
@@ -64,8 +64,8 @@ Following the steps below you will result in an Azure AD configuration that will
    # create the admin groups
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
-   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
-   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
+   export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
+   export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
 
    # assign the admin as new member in both groups
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
