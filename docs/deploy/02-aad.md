@@ -42,7 +42,7 @@ This does not configure anything related to workload identity. This configuratio
 
    ```bash
    az login
-   TENANTID_AZURERBAC=$(az account show --query tenantId -o tsv)
+   export TENANTID_AZURERBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
    TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
    ```
 
@@ -51,12 +51,14 @@ This does not configure anything related to workload identity. This configuratio
 1. Validate your saved Azure subscription's tenant id is correct
 
    ```bash
-   echo "${TENANTS}" | grep -z ${TENANTID_AZURERBAC}
+   echo "${TENANTS}" | grep -z ${TENANTID_AZURERBAC_AKS_MRB}
    ```
 
    :warning: Do not procced if the tenant highlighted in red is not correct. Start over by `az login` into the proper Azure subscription.
 
 1. From the list printed in the previous step, select an Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication and login into.
+
+   > :bulb: Skip this `az login` command if you plan to use your current user account's Azure AD tenant for Kubernetes authorization.
 
    ```bash
    az login --allow-no-subscriptions -t <Replace-With-ClusterApi-AzureAD-TenantId>
@@ -65,8 +67,8 @@ This does not configure anything related to workload identity. This configuratio
 1. Validate that the new saved tenant id is correct one for Kubernetes Cluster API authorization
 
    ```bash
-   TENANTID_K8SRBAC=$(az account show --query tenantId -o tsv)
-   echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC}
+   export TENANTID_K8SRBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC_AKS_MRB}
    ```
 
    :warning: If the tenant highlighted in red is not correct, start over by login into the proper Azure Directory Tenant for Kubernetes Cluster API authorization.
@@ -84,15 +86,25 @@ This does not configure anything related to workload identity. This configuratio
    # create the admin groups
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
-   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
-   AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
+   export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
+   export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
 
    # assign the admin as new member in both groups
-   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203 --member-id $AADOBJECTID_USER_CLUSTERADMIN
-   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204 --member-id $AADOBJECTID_USER_CLUSTERADMIN
+   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
+   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role bindings in Kubernetes. For more information, please refer to our [AKS Baseline](https://github.com/mspnp/aks-baseline).
+   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline).
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 

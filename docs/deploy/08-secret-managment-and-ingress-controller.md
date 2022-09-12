@@ -67,7 +67,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: $TENANTID_AZURERBAC
+       tenantId: $TENANTID_AZURERBAC_AKS_MRB
    EOF
    ```
 
@@ -139,7 +139,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: $TENANTID_AZURERBAC
+       tenantId: $TENANTID_AZURERBAC_AKS_MRB
    EOF
 
    # Install the Traefik Ingress Controller in the second region
