@@ -1,6 +1,6 @@
 # Deploy the AKS Clusters in two different regions
 
-Now that you [generated your Client-Facing and AKS Ingress Controller TLS Certificates](./05-ca-certificates.md), the next step in the [AKS baseline multi cluster reference implementation](../../README.md) is deploying the AKS clusters and its adjacent Azure resources.
+Now that you [generated your Client-Facing and AKS Ingress Controller TLS Certificates](./05-ca-certificates.md), the next step in the [AKS baseline multi cluster reference implementation](/README.md) is deploying the AKS clusters and its adjacent Azure resources.
 
 ## Expected results
 
