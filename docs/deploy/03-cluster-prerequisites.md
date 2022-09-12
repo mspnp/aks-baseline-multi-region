@@ -21,7 +21,7 @@ Following the steps below will result in the provisioning of the shared Azure re
    > :book: The networking team logins into the Azure subscription. At Contoso Bicycle, all of their regional hubs are in the same, centrally-managed subscription.
 
    ```bash
-   az login -t $TENANTID_AZURERBAC
+   az login -t $TENANTID_AZURERBAC_AKS_MRB
    ```
 1. Check for a pre-existing resource group with the name NetworkWatcherRG, if it doesn't exist then create it.
 

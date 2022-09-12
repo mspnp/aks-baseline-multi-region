@@ -43,7 +43,7 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 1. Get your GitHub username
 
    ```bash
-   GITHUB_USER_NAME=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
+   GITHUB_USER_NAME_AKS_MRB=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
    ```
 
 1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation. _OpenSSL is already installed in Azure Cloud Shell._
@@ -53,6 +53,16 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 1. Intall [Certbot](https://certbot.eff.org/)
 
    Certbot is a free, open source software tool for automatically using Let’s Encrypt certificates on manually-administrated websites to enable HTTPS. It'll be used to generate a TLS cert for your Application Gateway instances.
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 

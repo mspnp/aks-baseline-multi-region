@@ -92,15 +92,15 @@ Following the steps below will result in the provisioning of the AKS multi clust
         ```bash
         # Region 1
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
-        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" ./azuredeploy.parameters.eastus2.json && \
-        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
-        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" ./azuredeploy.parameters.centralus.json && \
-        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.centralus.json
         ```
@@ -110,7 +110,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically applied to their clusters as changes occur. This reference implementation is for a multi cluster infrastructure, so Flux is going to use Kustomization to deploy regions differenly by using a set of base manifest and patching them when needed.
 
         ```bash
-        sed -i -e "s/<user-name>/${GITHUB_USER_NAME}/" cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
+        sed -i -e "s/<user-name>/${GITHUB_USER_NAME_AKS_MRB}/" cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
         ```
 
         > :bulb: You want to modify your GitOps manifest file to point to your forked repo. Later on you can push changes to your repo, and they will be reflected in the state of your cluster.
