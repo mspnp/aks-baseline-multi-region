@@ -16,26 +16,6 @@ This does not configure anything related to workload identity. This configuratio
 
 ## Steps
 
-1. Select an Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication and login into.
-
-   > :warning: The user or service principal initiating the deployment process _must_ have the following minimal set of Azure AD permissions assigned:
-   >
-   > - Azure AD [User Administrator](https://docs.microsoft.com/azure/active-directory/users-groups-roles/directory-assign-admin-roles#user-administrator-permissions) is _required_ to create a "break glass" AKS admin Active Directory Security Group and User. Alternatively, you could get your Azure AD admin to create this for you when instructed to do so.
-   >   - If you are not part of the User Administrator group in the tenant associated to your Azure subscription, please consider [creating a new tenant](https://docs.microsoft.com/azure/active-directory/fundamentals/active-directory-access-create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation. The Azure AD tenant backing your Cluster's API RBAC does NOT need to be the same tenant associated with your Azure subscription.
-
-   ```bash
-   az login --allow-no-subscriptions -t <Replace-With-ClusterApi-AzureAD-TenantId>
-   ```
-
-1. Validate that the new saved tenant id is correct one for Kubernetes Cluster API authorization
-
-   ```bash
-   TENANTID_K8SRBAC=$(az account show --query tenantId -o tsv)
-   echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC}
-   ```
-
-   :warning: If the tenant highlighted in red is not correct, start over by login into the proper Azure Directory Tenant for Kubernetes Cluster API authorization.
-
 > :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
 
 1. Login into your Azure subscription, and save your Azure subscription's tenant id.
