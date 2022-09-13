@@ -8,8 +8,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
 | Object                         | Purpose                                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub Workflow                | A GitHub Workflow that deploys the multi cluster infrastructure in two different regions                                           |
-| Two Azure Application Gateways | One Azure Application Gateway in East US 2 and another one from its paired region Central US                                       |
+| GitHub Workflow                | A GitHub Workflow that deploys the multi cluster infrastructure in two different regions.                                          |
+| Two Azure Application Gateways | One Azure Application Gateway in East US 2 and another one from its paired region Central US.                                      |
 | Two configured AKS Clusters    | Two AKS Clusters in the identified regions, both bootstrapped with their initial desired state. Flux, Workload identity, and more. |
 
 ## Steps
