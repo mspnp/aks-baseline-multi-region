@@ -28,15 +28,12 @@ echo "Uploading placeholder to storage"
 echo pong>ping.txt
 az storage blob upload --account-name $STORAGE_ACCOUNT_NAME -c \$web -n ping -f ./ping.txt --auth-mode key
 
-echo "Warming up App Gateway"
-curl --retry 5 --retry-delay 5 http://${FQDN}/ping
-
 echo "Starting cert generation and validation"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 certbot certonly --manual --manual-auth-hook "${DIR}/authenticator.sh ${STORAGE_ACCOUNT_NAME}" -d $FQDN --config-dir ./certs/output/etc/letsencrypt --work-dir ./certs/output/var/lib/letsencrypt --logs-dir ./certs/output/var/log/letsencrypt
 
 openssl pkcs12 -export -out ${SUBDOMAIN}.pfx -inkey ./certs/output/etc/letsencrypt/live/${FQDN}/privkey.pem -in ./certs/output/etc/letsencrypt/live/${FQDN}/cert.pem -certfile ./certs/output/etc/letsencrypt/live/${FQDN}/chain.pem -passout pass:
 
-#echo "Deleting resources"
+echo "Deleting resources"
 az group delete -n $RGNAME --yes --no-wait
 rm -rf ./certs/output ./ping.txt

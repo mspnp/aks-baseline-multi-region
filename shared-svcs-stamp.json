@@ -310,7 +310,7 @@
                 }
             ]
         },
-        /*{
+        {
             "name": "PodFailedScheduledQuery",
             "type": "microsoft.insights/scheduledqueryrules",
             "location": "[parameters('location')]",
@@ -352,7 +352,7 @@
                     ]
                 }
             }
-        },*/
+        },
         {
             "type": "microsoft.insights/activityLogAlerts",
             "apiVersion": "2017-04-01",
