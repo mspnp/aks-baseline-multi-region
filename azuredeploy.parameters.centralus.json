@@ -1,31 +1,30 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-      "location": {
-        "value": "centralus"
-      },
-      "targetVnetResourceId": {
-        "value": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0042-04"
-      },
-      "appInstanceId": {
-        "value": "04"
-      },
-      "clusterAdminAadGroupObjectId": {
-        "value": "b311c8bf-855a-432a-8928-cfa4206addf6"
-      },
-      "k8sControlPlaneAuthorizationTenantId": {
-        "value": "72f988bf-86f1-41af-91ab-2d7cd011db47"
-      },
-      "clusterInternalLoadBalancerIpAddress": {
-        "value": "10.244.4.4"
-      },
-      "logAnalyticsWorkspaceId": {
-        "value": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourceGroups/rg-bu0001a0042-shared/providers/Microsoft.OperationalInsights/workspaces/la-bubym26wscfqe"
-      },
-      "containerRegistryId": {
-        "value": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourceGroups/rg-bu0001a0042-shared/providers/Microsoft.ContainerRegistry/registries/acraksbubym26wscfqe"
-      }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "centralus"
+    },
+    "targetVnetResourceId": {
+      "value": "<cluster-spoke-vnet-resource-id>"
+    },
+    "appInstanceId": {
+      "value": "04"
+    },
+    "clusterAdminAadGroupObjectId": {
+      "value": "<azure-ad-aks-admin-group-object-id>"
+    },
+    "k8sControlPlaneAuthorizationTenantId": {
+      "value": "<tenant-id-with-user-admin-permissions>"
+    },
+    "clusterInternalLoadBalancerIpAddress": {
+      "value": "10.244.4.4"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "<log-analytics-workspace-id>"
+    },
+    "containerRegistryId": {
+      "value": "<container-registry-id>"
     }
   }
-  
+}
