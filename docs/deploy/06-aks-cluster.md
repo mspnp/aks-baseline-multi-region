@@ -6,11 +6,11 @@ Now that you [generated your Client-Facing and AKS Ingress Controller TLS Certif
 
 Following the steps below will result in the provisioning of the AKS multi cluster solution.
 
-| Object                        | Purpose                                                                                                                                  |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub Workflow               | A GitHub Workflow that deploys the multi cluster infrastructure in two different regions                                                 |
-| Two Azure Application Gateway | One Azure Application Gateway in East US 2 and another one from its paired region Central US                                             |
-| Two configured AKS Clusters   | Two AKS Clusters in the same detailed regions and configured with their initial desired state. It is Flux, Azure Pod Identity, and more. |
+| Object                         | Purpose                                                                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub Workflow                | A GitHub Workflow that deploys the multi cluster infrastructure in two different regions.                                                 |
+| Two Azure Application Gateways | One Azure Application Gateway in East US 2 and another one from its paired region Central US.                                             |
+| Two configured AKS Clusters    | Two AKS Clusters in the identified regions, both bootstrapped with their initial desired state. It is Flux, Azure Pod Identity, and more. |
 
 ## Steps
 

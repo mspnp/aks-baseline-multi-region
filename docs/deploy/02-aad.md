@@ -12,6 +12,8 @@ Following the steps below you will result in an Azure AD configuration that will
 | Two Cluster Admin Security Groups  | Will be mapped to `cluster-admin` Kubernetes role.                                                                       |
 | Two Cluster Admin Group Membership | Association between the Cluster Admin User(s) and the two Cluster Admin Security Groups.                                 |
 
+This does not configure anything related to workload identity. This configuration is exclusively to set up RBAC access to perform cluster management.
+
 ## Steps
 
 > :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
