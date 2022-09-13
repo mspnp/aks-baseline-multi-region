@@ -6,41 +6,14 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 1. Get the AKS Ingress Controller Managed Identity details.
 
-   ```bash
-   TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
-   TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-   ```
+```bash
+INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
+```
 
-1. Create Traefik's Azure Managed Identity binding.
+1. Create the ingress controller's Secret Provider Class resource.
 
-   > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
-
-   ```bash
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -f -
-   apiVersion: "aadpodidentity.k8s.io/v1"
-   kind: AzureIdentity
-   metadata:
-     name: podmi-ingress-controller-identity
-     namespace: a0042
-   spec:
-     type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
-   ---
-   apiVersion: aadpodidentity.k8s.io/v1
-   kind: AzureIdentityBinding
-   metadata:
-     name: podmi-ingress-controller-binding
-     namespace: a0042
-   spec:
-     azureIdentity: podmi-ingress-controller-identity
-     selector: podmi-ingress-controller
-   EOF
-   ```
-
-1. Create the Traefik's Secret Provider Class resource.
-
-   > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
+   > The ingress controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
    > Create a `SecretProviderClass` resource with with your federated identity and Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
@@ -55,7 +28,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    spec:
      provider: azure
      parameters:
-       usePodIdentity: "true"
+       usePodIdentity: "false"
+       clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
        keyvaultName: $KEYVAULT_NAME_BU0001A0042_03
        objects:  |
          array:
@@ -92,29 +66,9 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 1. Contextualize the steps above for your second AKS Cluster to install the Traefik Ingress Controller
 
    ```bash
-   # Create Traefik's Azure Managed Identity binding.
-   TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
-   TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
-   apiVersion: "aadpodidentity.k8s.io/v1"
-   kind: AzureIdentity
-   metadata:
-     name: podmi-ingress-controller-identity
-     namespace: a0042
-   spec:
-     type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04
-   ---
-   apiVersion: "aadpodidentity.k8s.io/v1"
-   kind: AzureIdentityBinding
-   metadata:
-     name: podmi-ingress-controller-binding
-     namespace: a0042
-   spec:
-     azureIdentity: podmi-ingress-controller-identity
-     selector: podmi-ingress-controller
-   EOF
+  # Get the AKS Ingress Controller Managed Identity details.
+   INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_04
 
    # Create the Traefik's Secret Provider Class resource.
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
@@ -127,7 +81,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    spec:
      provider: azure
      parameters:
-       usePodIdentity: "true"
+       usePodIdentity: "false"
+       clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_04
        keyvaultName: $KEYVAULT_NAME_BU0001A0042_04
        objects:  |
          array:

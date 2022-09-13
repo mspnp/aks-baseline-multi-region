@@ -163,8 +163,26 @@
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
             "apiVersion": "2018-11-30",
             "name": "podmi-ingress-controller",
-            "location": "[parameters('location')]",
-            "comments": "User Managed Identity for the cluster's ingress controller pods. Used for Azure Key Vault Access."
+            "location": "westcentralUS", // This is the only region currently supported. TODO: Update to [parameters('location')] once in public preview.
+            "comments": "User Managed Identity for the cluster's ingress controller pods. Used for Azure Key Vault Access.",
+            "resources": [
+                {
+                    "type": "federatedIdentityCredentials",
+                    "apiVersion": "2022-01-31-preview",
+                    "name": "ingress-controller",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]",
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+                    ],
+                    "properties": {
+                        "issuer": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))).oidcIssuerProfile.issuerURL]",
+                        "subject": "system:serviceaccount:a0042:traefik-ingress-controller",
+                        "audiences": [
+                            "api://AzureADTokenExchange"
+                        ]
+                    }
+                }
+            ]
         },
         {
             "type": "Microsoft.KeyVault/vaults",
@@ -276,7 +294,7 @@
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
                     ],
-                    "comments": "Grant the AKS cluster ingress controller pod managed identity with reader role permissions over Key Vault; paired with the Access Policy, this allows our ingress controller to pull certificates.",
+                    "comments": "Grant the AKS cluster ingress controller's managed workload identity with reader role permissions over Key Vault; paired with the Access Policy, this allows our ingress controller to pull certificates.",
                     "properties": {
                         "roleDefinitionId": "[variables('readerRole')]",
                         "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).principalId]",
@@ -774,7 +792,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2021-02-01",
+            "apiVersion": "2022-03-02-preview",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "tags": {
@@ -918,10 +936,22 @@
                     "enablePrivateCluster": false
                 },
                 "podIdentityProfile": {
-                    "enabled": false, /* This feature is currently in preview and will eventually replace the aad-pod-identity configuration set up by hand in this reference implementation */
-                    "userAssignedIdentities": [],
-                    "userAssignedIdentityExceptions": []
-                }
+                    "enabled": false /* Using federated workload identity for Azure AD Pod identities, not the deprecated AAD Pod Identity */
+                },
+                "disableLocalAccounts:": true,
+                "securityProfile": {
+                    "workloadIdentity": {
+                        "enabled": true
+                    },
+                    "azureDefender": {
+                        "enabled": true,
+                        "logAnalyticsWorkspaceResourceId": "[parameters('logAnalyticsWorkspaceId')]"
+                    }
+                },
+                "oidcIssuerProfile": {
+                    "enabled": true
+                },
+                "enableNamespaceResources": false
             },
             "identity": {
                 "type": "UserAssigned",
@@ -1576,20 +1606,6 @@
             }
         },
         {
-            "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
-            "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('managedIdentityOperatorRole')))]",
-            "apiVersion": "2018-09-01-preview",
-            "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the managed identity used for the ingress controller.  Allows it to be assigned to the underlying VMSS.",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('managedIdentityOperatorRole')]",
-                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-11-01').identityProfile.kubeletidentity.objectId]",
-                "principalType": "ServicePrincipal"
-            }
-        },
-        {
             "type": "Microsoft.Authorization/policyAssignments",
             "apiVersion": "2020-03-01",
             "name": "[variables('policyAssignmentNameAKSLinuxRestrictive')]",
@@ -1604,7 +1620,8 @@
                             "kube-system",
                             "gatekeeper-system",
                             "azure-arc",
-                            "cluster-baseline-settings"
+                            "cluster-baseline-settings",
+                            "azure-workload-identity-system"
                         ]
                     },
                     "effect": {
@@ -1665,7 +1682,8 @@
                         "value": [
                             "kube-system",
                             "gatekeeper-system",
-                            "azure-arc"
+                            "azure-arc",
+                            "azure-workload-identity-system"
                         ]
                     },
                     "effect": {
@@ -1695,7 +1713,8 @@
                             "kube-system",
                             "gatekeeper-system",
                             "azure-arc",
-                            "cluster-baseline-settings"
+                            "cluster-baseline-settings",
+                            "azure-workload-identity-system"
                         ]
                     },
                     "effect": {
@@ -1721,7 +1740,8 @@
                         "value": [
                             "kube-system",
                             "gatekeeper-system",
-                            "azure-arc"
+                            "azure-arc",
+                            "azure-workload-identity-system"
                         ]
                     },
                     "effect": {
@@ -1739,10 +1759,6 @@
         "agwName": {
             "type": "string",
             "value": "[variables('agwName')]"
-        },
-        "aksIngressControllerPodManagedIdentityResourceId": {
-            "type": "string",
-            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
         },
         "aksIngressControllerPodManagedIdentityClientId": {
             "type": "string",
