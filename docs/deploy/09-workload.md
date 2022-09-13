@@ -15,7 +15,7 @@ The cluster now has [Traefik configured with a TLS certificate](./08-secret-mana
    > The workload definition demonstrates the inclusion of a Pod Disruption Budget rule, ingress configuration, and pod (anti-)affinity rules for your reference.
 
    ```bash
-   kubectl apply -f ./workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   kubectl apply -f ./workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
    ```
 
 1. Deploy the same workload as another instance in the second AKS cluster deployed to Region 2. Additionally, you will be enable some canary testing from the second cluster.
@@ -32,9 +32,9 @@ The cluster now has [Traefik configured with a TLS certificate](./08-secret-mana
 1. Wait until both regions are ready to process requests
 
    ```bash
-   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03
-   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
-   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp-canary --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
+   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
+   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp-canary --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
    ```
 
 1. Check the status of your Ingress resources as a way to confirm the AKS-managed Internal Load Balancer is functioning
@@ -42,8 +42,8 @@ The cluster now has [Traefik configured with a TLS certificate](./08-secret-mana
    > In this moment your Ingress Controller (Traefik) is reading your ingress resource object configuration, updating its status, and creating a router to fulfill the new exposed workloads route. Please take a look at this and notice that the address is set with the Internal Load Balancer IP from the configured subnet.
 
    ```bash
-   kubectl get IngressRoute aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_03
-   kubectl get IngressRoute aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl get IngressRoute aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
+   kubectl get IngressRoute aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
    ```
 
    > At this point, the route to the workload is established, SSL offloading configured, and a network policy is in place to only allow Traefik to connect to your workload. Therefore, you should expect a `403` HTTP response if you attempt to connect to it directly.

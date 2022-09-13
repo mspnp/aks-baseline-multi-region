@@ -16,7 +16,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
    ```bash
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
@@ -46,7 +46,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
    metadata:
@@ -78,7 +78,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    sed -i -e "s/docker.io/${ACR_NAME}.azurecr.io/" workload/traefik-region1.yaml
-   kubectl apply -f ./workload/traefik-region1.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   kubectl apply -f ./workload/traefik-region1.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
    ```
 
 1. Wait for Traefik to be ready.
@@ -86,7 +86,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > During Traefik's pod creation process, AAD Pod Identity will need to retrieve token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md).
 
    ```bash
-   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
    ```
 
 1. Contextualize the steps above for your second AKS Cluster to install the Traefik Ingress Controller
@@ -95,7 +95,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    # Create Traefik's Azure Managed Identity binding.
    TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
@@ -118,7 +118,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    # Create the Traefik's Secret Provider Class resource.
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
    metadata:
@@ -144,10 +144,10 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    # Install the Traefik Ingress Controller in the second region
    sed -i -e "s/docker.io/${ACR_NAME}.azurecr.io/" workload/traefik-region2.yaml
-   kubectl apply -f ./workload/traefik-region2.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl apply -f ./workload/traefik-region2.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
 
    # Wait for Traefik to be ready.
-   kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
    ```
 
 ### Next step

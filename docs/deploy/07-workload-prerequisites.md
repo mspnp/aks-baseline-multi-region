@@ -53,8 +53,8 @@ Now that [the AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
 1. Confirm policies are applied to the AKS cluster
 
    ```bash
-   kubectl get constrainttemplate --context $AKS_CLUSTER_NAME_BU0001A0042_03
-   kubectl get constrainttemplate --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl get constrainttemplate --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
+   kubectl get constrainttemplate --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
    ```
 
    A similar output as the one showed below should be returned
