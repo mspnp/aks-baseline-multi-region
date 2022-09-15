@@ -41,7 +41,7 @@ data:
     [http.middlewares]
       [http.middlewares.gzip-compress.compress]
       [http.middlewares.app-gateway-snet.ipWhiteList]
-        sourceRange = ["10.244.4.16/28"]
+        sourceRange = ["10.244.5.0/24"]
     [entryPoints]
       [entryPoints.metrics]
         address = ":8082"
@@ -50,7 +50,7 @@ data:
       [entryPoints.websecure]
         address = ":8443"
         [entryPoints.websecure.forwardedHeaders]
-          trustedIPs = ["10.244.4.16/28"]
+          trustedIPs = ["10.244.5.0/24"]
         [entryPoints.websecure.http.tls]
           options = "default"
     [ping]
