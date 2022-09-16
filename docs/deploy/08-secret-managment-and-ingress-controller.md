@@ -48,6 +48,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
+   echo KEYVAULT_NAME_BU0001A0042_03: $KEYVAULT_NAME_BU0001A0042_03
+   
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
@@ -97,6 +99,9 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    # Create Traefik's Azure Managed Identity binding.
    TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   echo TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04
+   echo TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04
+   
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
@@ -120,6 +125,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    # Create the Traefik's Secret Provider Class resource.
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
+   echo KEYVAULT_NAME_BU0001A0042_04: $KEYVAULT_NAME_BU0001A0042_04
+   
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
