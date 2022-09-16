@@ -45,7 +45,6 @@ This is the starting point for the instructions on deploying the [AKS baseline m
    ```bash
    export GITHUB_USER_NAME_AKS_MRB=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
    echo GITHUB_USER_NAME_AKS_MRB: $GITHUB_USER_NAME_AKS_MRB
-   
    ```
 
 1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation. _OpenSSL is already installed in Azure Cloud Shell._
