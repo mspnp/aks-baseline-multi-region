@@ -121,11 +121,6 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
         > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically applied to their clusters as changes occur. This reference implementation is for a multi cluster infrastructure, so Flux is going to use Kustomization to deploy regions differenly by using a set of base manifest and patching them when needed.
 
-        Verify the stored GitHub username is correct:
-        ```bash
-        echo ${GITHUB_USER_NAME_AKS_MRB}
-        ```
-        
         Update the Kubernetes manifest file to use the repo for your GitHub username:
         ```bash
         sed -i -E "s#(github.com/).+(/aks-baseline-multi-region.git)#\1${GITHUB_USER_NAME_AKS_MRB}\2#" cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
