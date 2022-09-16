@@ -13,6 +13,8 @@ This section will help you to validate the workload is exposed correctly and res
    ```bash
    APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
    APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   echo APPGW_FQDN_BU0001A0042_03: $APPGW_FQDN_BU0001A0042_03
+   echo APPGW_FQDN_BU0001A0042_04: $APPGW_FQDN_BU0001A0042_04
    ```
 
 1. Get your Azure Front Door public DNS name
@@ -22,6 +24,7 @@ This section will help you to validate the workload is exposed correctly and res
    ```bash
    # query the Azure Front Door FQDN
    FRONTDOOR_FQDN=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
+   echo FRONTDOOR_FQDN: $FRONTDOOR_FQDN
    ```
 
 1. Add some load to the web application to test that it consistently responds `HTTP 200`; even while the system is experiencing (simulated) regional outages.
