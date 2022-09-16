@@ -25,8 +25,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
 1.  Obtain shared services resource details
 
     ```bash
-    export LOGANALYTICSWORKSPACEID_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
-    export CONTAINERREGISTRYID_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
+    LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
+    CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
     ```
 
 1.  Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
@@ -34,8 +34,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
     > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
 
     ```bash
-    export RESOURCEID_VNET_BU0001A0042_03_AKS_MRB=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
-    export RESOURCEID_VNET_BU0001A0042_04_AKS_MRB=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+    RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+    RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
     ```
 
     1.  Create the Azure Credentials for the GitHub CD workflow.
@@ -91,13 +91,13 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
         Verify all variables are populated:
         ```bash
-        echo RESOURCEID_VNET_BU0001A0042_03_AKS_MRB: ${RESOURCEID_VNET_BU0001A0042_03_AKS_MRB}
-        echo RESOURCEID_VNET_BU0001A0042_04_AKS_MRB: ${RESOURCEID_VNET_BU0001A0042_04_AKS_MRB}
+        echo RESOURCEID_VNET_BU0001A0042_03: ${RESOURCEID_VNET_BU0001A0042_03}
+        echo RESOURCEID_VNET_BU0001A0042_04: ${RESOURCEID_VNET_BU0001A0042_04}
         echo TENANTID_K8SRBAC_AKS_MRB: ${TENANTID_K8SRBAC_AKS_MRB}
         echo AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: ${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB}
         echo AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: ${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}
-        echo LOGANALYTICSWORKSPACEID_AKS_MRB: ${LOGANALYTICSWORKSPACEID_AKS_MRB}
-        echo CONTAINERREGISTRYID_AKS_MRB: ${CONTAINERREGISTRYID_AKS_MRB}
+        echo LOGANALYTICSWORKSPACEID: ${LOGANALYTICSWORKSPACEID}
+        echo CONTAINERREGISTRYID: ${CONTAINERREGISTRYID}
         ```
         
         Update each region's cluster parameter file:
@@ -106,15 +106,15 @@ Following the steps below will result in the provisioning of the AKS multi clust
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
-        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
-        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json
+        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEIDB}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
-        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
-        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
+        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.centralus.json
         ```
 
     1.  Customize Flux to watch your own repo.
@@ -128,7 +128,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         
         Update the Kubernetes manifest file to use the repo for your GitHub username:
         ```bash
-        sed -i -E "s/(github.com\/).+(\/aks-baseline-multi-region.git)/\1${GITHUB_USER_NAME_AKS_MRB}\2/" cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
+        sed -i -E "s#(github.com/).+(/aks-baseline-multi-region.git)#\1${GITHUB_USER_NAME_AKS_MRB}\2#" cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
         ```
 
         > :bulb: You want to modify your GitOps manifest file to point to your forked repo. Later on you can push changes to your repo, and they will be reflected in the state of your cluster.
