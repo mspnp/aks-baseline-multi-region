@@ -24,6 +24,7 @@ This does not configure anything related to workload identity. This configuratio
    az login
    export TENANTID_AZURERBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
    echo TENANTID_AZURERBAC_AKS_MRB: $TENANTID_AZURERBAC_AKS_MRB
+   
    TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
    ```
 
