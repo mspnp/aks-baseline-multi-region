@@ -15,6 +15,9 @@ Now that [the AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
    ```bash
    KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
+   echo KEYVAULT_NAME_BU0001A0042_03: $KEYVAULT_NAME_BU0001A0042_03
+   echo KEYVAULT_NAME_BU0001A0042_04: $KEYVAULT_NAME_BU0001A0042_04
+   
    az keyvault set-policy --certificate-permissions import list get --object-id $(az ad signed-in-user show --query 'id' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_03
    az keyvault set-policy --certificate-permissions import list get --object-id $(az ad signed-in-user show --query 'id' -o tsv) -n $KEYVAULT_NAME_BU0001A0042_04
    ```
@@ -48,6 +51,8 @@ Now that [the AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
    ```bash
    AKS_CLUSTER_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
    AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   echo AKS_CLUSTER_NAME_BU0001A0042_03: $AKS_CLUSTER_NAME_BU0001A0042_03
+   echo AKS_CLUSTER_NAME_BU0001A0042_04: $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 
 1. Confirm policies are applied to the AKS cluster
