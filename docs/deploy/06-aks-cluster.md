@@ -95,6 +95,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
     1.  Generate cluster parameter file per region
 
         Verify all variables are populated:
+
         ```bash
         echo RESOURCEID_VNET_BU0001A0042_03: $RESOURCEID_VNET_BU0001A0042_03
         echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04
