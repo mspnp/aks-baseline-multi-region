@@ -106,6 +106,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         ```
         
         Update each region's cluster parameter file:
+
         ```bash
         # Region 1
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
