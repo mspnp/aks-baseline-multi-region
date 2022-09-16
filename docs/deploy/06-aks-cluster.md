@@ -103,14 +103,14 @@ Following the steps below will result in the provisioning of the AKS multi clust
         Update each region's cluster parameter file:
         ```bash
         # Region 1
-        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEIDB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
-        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
