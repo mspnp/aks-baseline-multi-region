@@ -1,9 +1,9 @@
 # Azure Kubernetes Service (AKS) for multi-region deployment
 
-This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a multi-cluster (and multi-region) architecture. This implementation and document are meant to guide the multiple distinct teams introduced in the [AKS baseline](https://github.com/mspnp/aks-baseline) through the process of expanding from a single cluster to a multi-cluster solution with a fundamental driver in mind which is **Reliability** via the [Geode cloud design pattern](https://docs.microsoft.com//azure/architecture/patterns/geodes).
+This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a multi-cluster (and multi-region) architecture. This implementation and document are meant to guide the multiple distinct teams introduced in the [AKS baseline](https://github.com/mspnp/aks-baseline) through the process of expanding from a single cluster to a multi-cluster solution with a fundamental driver in mind which is **Reliability** via the [Geode cloud design pattern](https://learn.microsoft.com//azure/architecture/patterns/geodes).
 
 
-> Note: This implementation does not leverage <!-- [AKS fleet capability](https://docs.microsoft.com/cli/azure/fleet?view=azure-cli-latest) or --> any <!-- other --> cluster clustering technologies (OSS or otherwise), but instead represents a manual approach to clustering multiple AKS clusters together. Operating fleets containing a large number clusters is usually best performed with advanced and dedicated tooling. This implementation supports a small scale and introduces some of the core concepts that will be necessary no matter the scale or tooling.
+> Note: This implementation does not leverage <!-- [AKS fleet capability](https://learn.microsoft.com/cli/azure/fleet?view=azure-cli-latest) or --> any <!-- other --> cluster clustering technologies (OSS or otherwise), but instead represents a manual approach to clustering multiple AKS clusters together. Operating fleets containing a large number clusters is usually best performed with advanced and dedicated tooling. This implementation supports a small scale and introduces some of the core concepts that will be necessary no matter the scale or tooling.
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional, small, and fast-growing startup that provides online web services to its clientele on the east coast of the United States. This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
@@ -46,7 +46,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
 - [Azure AD Pod Identity](https://github.com/Azure/aad-pod-identity)
 - [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
-- [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
+- [Kured](https://learn.microsoft.com/azure/aks/node-updates-kured)
 
 ![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-baseline-multi-cluster.png)
 
@@ -94,10 +94,10 @@ This reference implementation intentionally does not cover all scenarios. If you
 
 ## Related documentation
 
-- [Azure Kubernetes Service Documentation](https://docs.microsoft.com/azure/aks/)
-- [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/azure/architecture/framework/)
-- [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
-- [Mission-critical baseline architecture on Azure](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-mission-critical/mission-critical-intro)
+- [Azure Kubernetes Service Documentation](https://learn.microsoft.com/azure/aks/)
+- [Microsoft Azure Well-Architected Framework](https://learn.microsoft.com/azure/architecture/framework/)
+- [Microservices architecture on AKS](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
+- [Mission-critical baseline architecture on Azure](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks-mission-critical/mission-critical-intro)
 
 ## Contributions
 
