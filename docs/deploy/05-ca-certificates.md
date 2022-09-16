@@ -35,9 +35,13 @@ Following the steps below you will result the certificates needed for Azure Appl
    # get the Public IP subdomins
    APPGW_SUBDOMAIN_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.subdomainName.value -o tsv)
    APPGW_SUBDOMAIN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.subdomainName.value -o tsv)
+   echo APPGW_SUBDOMAIN_BU0001A0042_03: $APPGW_SUBDOMAIN_BU0001A0042_03
+   echo APPGW_SUBDOMAIN_BU0001A0042_04: $APPGW_SUBDOMAIN_BU0001A0042_04
 
    export APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB=$(cat ${APPGW_SUBDOMAIN_BU0001A0042_03}.pfx | base64 | tr -d '\n')
    export APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB=$(cat ${APPGW_SUBDOMAIN_BU0001A0042_04}.pfx | base64 | tr -d '\n')
+   echo APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB: $APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB
+   echo APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB: $APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB
    ```
 
 1. Generate the wildcard certificate for the AKS ingress controller.
@@ -57,6 +61,7 @@ Following the steps below you will result the certificates needed for Azure Appl
 
    ```bash
    export AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
+   echo AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB: $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB
    ```
 
 ### Save your work in-progress

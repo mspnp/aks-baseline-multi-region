@@ -23,10 +23,11 @@ This does not configure anything related to workload identity. This configuratio
    ```bash
    az login
    export TENANTID_AZURERBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   echo TENANTID_AZURERBAC_AKS_MRB: $TENANTID_AZURERBAC_AKS_MRB
    TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
    ```
 
-   > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
+   > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
 
 1. Validate your saved Azure subscription's tenant id is correct
 
@@ -48,6 +49,7 @@ This does not configure anything related to workload identity. This configuratio
 
    ```bash
    export TENANTID_K8SRBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   echo TENANTID_K8SRBAC_AKS_MRB: $TENANTID_K8SRBAC_AKS_MRB
    echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC_AKS_MRB}
    ```
 
@@ -62,13 +64,20 @@ This does not configure anything related to workload identity. This configuratio
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
    AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a0042-admin
    AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0042AdminChangeMe --query id -o tsv)
-
+   echo TENANTDOMAIN_K8SRBAC: $TENANTDOMAIN_K8SRBAC
+   echo AADOBJECTNAME_USER_CLUSTERADMIN: $AADOBJECTNAME_USER_CLUSTERADMIN
+   echo AADOBJECTID_USER_CLUSTERADMIN: $AADOBJECTID_USER_CLUSTERADMIN
+   
    # create the admin groups
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
    AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
    export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
    export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
-
+   echo AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203: $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203
+   echo AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204: $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204
+   echo AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB
+   echo AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB
+   
    # assign the admin as new member in both groups
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN

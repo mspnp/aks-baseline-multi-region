@@ -18,7 +18,7 @@
             "value": "10.244.4.0/28"
         },
         "applicationGatewaySubnetAddressPrefix": {
-            "value": "10.244.4.16/28"
+            "value": "10.244.5.0/24"
         }
     }
 }

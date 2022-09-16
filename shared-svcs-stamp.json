@@ -57,7 +57,7 @@
                 "southcentralus"
             ],
             "metadata": {
-                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
+                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://learn.microsoft.com/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
             }
         }
     },
@@ -317,7 +317,7 @@
             "apiVersion": "2021-08-01",
             "tags": {},
             "properties": {
-                "description": "Example from: https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts",
+                "description": "Example from: https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-alerts",
                 "severity": 3,
                 "enabled": true,
                 "evaluationFrequency": "PT5M",

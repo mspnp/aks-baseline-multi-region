@@ -6,10 +6,10 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 1. Get the AKS Ingress Controller Managed Identity details.
 
-```bash
-INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
-```
+   ```bash
+   INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
+   ```
 
 1. Create the ingress controller's Secret Provider Class resource.
 
@@ -19,6 +19,8 @@ echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
 
    ```bash
    KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
+   echo KEYVAULT_NAME_BU0001A0042_03: $KEYVAULT_NAME_BU0001A0042_03
+   
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
@@ -66,12 +68,14 @@ echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
 1. Contextualize the steps above for your second AKS Cluster to install the Traefik Ingress Controller
 
    ```bash
-  # Get the AKS Ingress Controller Managed Identity details.
+   # Get the AKS Ingress Controller Managed Identity details.
    INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    echo $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_04
 
    # Create the Traefik's Secret Provider Class resource.
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
+   echo KEYVAULT_NAME_BU0001A0042_04: $KEYVAULT_NAME_BU0001A0042_04
+   
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
