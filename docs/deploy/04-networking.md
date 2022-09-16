@@ -51,6 +51,7 @@ The following two resource groups will be created and populated with networking 
    ```bash
    # [Creating the generic hubs takes about ten minutes to run (each).]
    BASE_FIREWALL_POLICIES_ID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.baseFirewallPoliciesId.value -o tsv)
+   echo BASE_FIREWALL_POLICIES_ID: $BASE_FIREWALL_POLICIES_ID
 
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionA -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionB -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
@@ -58,12 +59,18 @@ The following two resource groups will be created and populated with networking 
    # [Creating the spokes takes about ten minutes to run.]
    RESOURCEID_VNET_HUB_REGIONA=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-regionA --query properties.outputs.hubVnetId.value -o tsv)
    RESOURCEID_VNET_HUB_REGIONB=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-regionB --query properties.outputs.hubVnetId.value -o tsv)
+   echo RESOURCEID_VNET_HUB_REGIONA: $RESOURCEID_VNET_HUB_REGIONA
+   echo RESOURCEID_VNET_HUB_REGIONB: $RESOURCEID_VNET_HUB_REGIONB
+   
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONA}" @networking/spoke-BU0001A0042.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONB}" @networking/spoke-BU0001A0042.parameters.centralus.json
 
     # [Enrolling the spokes into the hubs takes about ten minutes to run (each).]
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03
+   echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04
+   
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionA -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2  @networking/hub-region.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionB -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
     ```
