@@ -27,6 +27,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
     ```bash
     LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
     CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
+    echo LOGANALYTICSWORKSPACEID: $LOGANALYTICSWORKSPACEID
+    echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID
     ```
 
 1.  Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
@@ -36,6 +38,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
     ```bash
     RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
     RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+    echo RESOURCEID_VNET_BU0001A0042_03: $RESOURCEID_VNET_BU0001A0042_03
+    echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04
     ```
 
     1.  Create the Azure Credentials for the GitHub CD workflow.
@@ -48,6 +52,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         # Federated Identity, see https://github.com/Azure/login#configure-deployment-credentials.
         az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
         APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
+        echo APP_ID: $APP_ID
 
         # Wait for propagation
         until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for Azure AD propagation" && sleep 5; done
@@ -132,6 +137,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
         ```bash
         ACR_NAME=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+        echo ACR_NAME: $ACR_NAME
 
         find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME}/" {} +
         ```
@@ -157,6 +163,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
         ```bash
         export AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
         export AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+        echo AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB: $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
+        echo AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB: $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
 
     1.  Get AKS `kubectl` credentials.
