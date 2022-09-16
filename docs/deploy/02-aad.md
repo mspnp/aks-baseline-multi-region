@@ -23,6 +23,7 @@ This does not configure anything related to workload identity. This configuratio
    ```bash
    az login
    export TENANTID_AZURERBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   echo TENANTID_AZURERBAC_AKS_MRB: $TENANTID_AZURERBAC_AKS_MRB
    TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
    ```
 
@@ -48,6 +49,7 @@ This does not configure anything related to workload identity. This configuratio
 
    ```bash
    export TENANTID_K8SRBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
+   echo TENANTID_K8SRBAC_AKS_MRB: $TENANTID_K8SRBAC_AKS_MRB
    echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC_AKS_MRB}
    ```
 
@@ -72,6 +74,12 @@ This does not configure anything related to workload identity. This configuratio
    # assign the admin as new member in both groups
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
+   
+   echo TENANTDOMAIN_K8SRBAC: $TENANTDOMAIN_K8SRBAC
+   echo AADOBJECTNAME_USER_CLUSTERADMIN: $AADOBJECTNAME_USER_CLUSTERADMIN
+   echo AADOBJECTID_USER_CLUSTERADMIN: $AADOBJECTID_USER_CLUSTERADMIN
+   echo AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203: $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203
+   echo AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204: $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204
    ```
 
    :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline).
