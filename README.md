@@ -81,6 +81,12 @@ Keep an eye on Log Analytics as time goes by and manage the information which is
 
 There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost, you can disable these rules. The consequence is that not valid traffic will arrive at Application Gateway using resources instead of being eliminated as soon as possible.
 
+## :broom: Clean up resources
+
+Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
+
+- [ ] [Cleanup all resources](./docs/deploy/11-cleanup.md)
+
 ## Preview features
 
 While this reference implementation tends to avoid _preview_ features of AKS to ensure you have the best customer support experience; there are some features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. Consider trying out and providing feedback on the following. As these features come out of preview, this reference implementation may be updated to incorporate them.
