@@ -62,6 +62,11 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 - [ ] [Configure AKS ingress controller with Azure Key Vault integration](./docs/deploy/08-secret-managment-and-ingress-controller.md)
 - [ ] [Deploy the workload](./docs/deploy/09-workload.md)
 - [ ] [Perform end-to-end deployment validation](./docs/deploy/10-validation.md)
+
+## :broom: Clean up resources
+
+Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
+
 - [ ] [Cleanup all resources](./docs/deploy/11-cleanup.md)
 
 ## Cost Considerations
@@ -80,12 +85,6 @@ The Virtual Machines on the AKS Cluster are needed. The cluster can be shared by
 Keep an eye on Log Analytics as time goes by and manage the information which is collected. The main cost is related to data ingestion into the Log Analytics workspace, you can fine tune that.
 
 There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost, you can disable these rules. The consequence is that not valid traffic will arrive at Application Gateway using resources instead of being eliminated as soon as possible.
-
-## :broom: Clean up resources
-
-Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
-
-- [ ] [Cleanup all resources](./docs/deploy/11-cleanup.md)
 
 ## Preview features
 
