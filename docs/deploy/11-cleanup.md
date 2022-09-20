@@ -42,4 +42,4 @@ After you are done exploring your deployed [AKS baseline multi cluster](/README.
 
 ### Next step
 
-:arrow_forward: [Review additional information in the main README](./README.md#broom-clean-up-resources)
+:arrow_forward: [Review additional information in the main README](/README.md#broom-clean-up-resources)
