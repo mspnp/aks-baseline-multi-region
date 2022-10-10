@@ -6,13 +6,13 @@ In the prior step, you [prep for Azure Active Directory integration](./02-aad.md
 
 Following the steps below will result in the provisioning of the shared Azure resources needed for an AKS multi cluster solution.
 
-| Object                        | Purpose                                                                                                                                                                                                                                                                                             |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NetworkWatcherRG Resource Group      | Contains regional Network Watchers. (Most subscriptions already have this.)    
-| Azure Container Registry      | A single Azure Container Registry instance for those container images shared across multiple clusters                                                                                                                                                                                               |
-| Azure Log Analytics Workspace | A Centralized Log Analytics workspace where all the logs are collected                                                                                                                                                                                                                              |
-| Azure Front Door              | Azure Front Door routes traffic to the fastest and available (healthy) backend. Public IP FQDN(s) emitted by the spoke network deployments are being configured in advance as AFD's backends. These regional PIP(s) are later assigned to the Azure Application Gateways Frontend Ip Configuration. |
-| Azure Firewall Policy base rules   | Azure Firewall rules that apply at the entire organization level. These rules are typically cluster agnostic, so they can be shared by them all. |
+| Object                          | Purpose                                                                                                                                                                                                                                                                                             |
+|:------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NetworkWatcherRG Resource Group  | Contains regional Network Watchers. (Most subscriptions already have this.)    
+| Azure Container Registry         | A single Azure Container Registry instance for those container images shared across multiple clusters                                                                                                                                                                                               |
+| Azure Log Analytics Workspace    | A Centralized Log Analytics workspace where all the logs are collected                                                                                                                                                                                                                              |
+| Azure Front Door                 | Azure Front Door routes traffic to the fastest and available (healthy) backend. Public IP FQDN(s) emitted by the spoke network deployments are being configured in advance as AFD's backends. These regional PIP(s) are later assigned to the Azure Application Gateways Frontend Ip Configuration. |
+| Azure Firewall Policy base rules | Azure Firewall rules that apply at the entire organization level. These rules are typically cluster agnostic, so they can be shared by them all. |
 
 ## Steps
 
@@ -48,14 +48,14 @@ Following the steps below will result in the provisioning of the shared Azure re
 
 1. Deploy the AKS cluster prerequisites and shared services.
 
-> :book: The app team is about to provision three shared Azure resources. One is a non-regional and two regional, but more importantly they are deployed independently from their AKS Clusters:
+> :book: The app team is about to provision a few shared Azure resources. One is a non-regional and rest are regional, but more importantly they are deployed independently from their AKS clusters.
 >
-> | Azure Resource                                                                                               | Non-Regional | East US 2 | Central US |
-> | ------------------------------------------------------------------------------------------------------------ | :----------: | :-------: | :--------: |
+> | Azure Resource                                                                                                | Non-Regional | East US 2 | Central US |
+> |:------------------------------------------------------------------------------------------------------------- | :----------: | :-------: | :--------: |
 > | [Log Analytics in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-overview) |              |     ✓     |            |
 > | [Azure Container Registry](https://learn.microsoft.com/azure/container-registry/)                             |              |     ✓     |     ✓      |
 > | [Azure Front Door](https://learn.microsoft.com/azure/frontdoor/front-door-overview)                           |      ✓       |           |            |
-> | [Azure Firewall Policy](https://learn.microsoft.com/en-us/azure/firewall-manager/policy-overview)             |              |   ✓       |            |
+> | [Azure Firewall Policy](https://learn.microsoft.com/azure/firewall-manager/policy-overview)                   |              |     ✓     |            |
 >
 
 > **Azure Monitor logs solution**

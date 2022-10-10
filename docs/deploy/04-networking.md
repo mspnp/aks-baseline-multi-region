@@ -12,24 +12,24 @@ This reference implementation is split across several resource groups in a singl
 
 The following two resource groups will be created and populated with networking resources in the steps below.
 
-| Name                            | Purpose                                                                                                                                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| rg-enterprise-networking-hubs   | Contains all of your organization's regional hubs. A regional hubs include an egress firewall and Log Analytics for network logging.                                                                 |
-| rg-enterprise-networking-spokes | Contains all of your organization's regional spokes and related networking resources. All spokes will peer with their regional hub and subnets will egress through the regional firewall in the hub. |
+| Name                              | Purpose                                                                                                                              |
+|:--------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------ |
+| `rg-enterprise-networking-hubs`   | Contains all of your organization's regional hubs. A regional hubs include an egress firewall and Log Analytics for network logging. |
+| `rg-enterprise-networking-spokes` | Contains all of your organization's regional spokes and related networking resources. All spokes will peer with their regional hub and subnets will egress through the regional firewall in the hub. |
 
 ### Resources
 
-- Regional Azure Firewall in each Hub Virtual Network
-- One Network Spoke per Cluster
-- Network Peering from the Spokes to their corresponding regional Hub
-- Force Tunnel UDR for Cluster Subnets to their Hubs
+- Regional Azure Firewall in each hub Virtual Network
+- One network spoke per cluster
+- Network Peering from the spokes to their corresponding regional hub
+- Force tunnel UDR for cluster subnets to their hubs
 - Network Security Groups for all subnets that support them
 
 ## Steps
 
 1. Create the networking hub-spoke resource groups.
 
-   > :book: The networking team has all their regional networking hubs and spokes in the following centrally-managed Azure Resource Groups
+   > :book: The networking team has all their regional networking hubs and spokes in the following centrally-managed Azure Resource Groups.
 
    ```bash
    az group create -n rg-enterprise-networking-hubs -l centralus
@@ -76,7 +76,7 @@ The following two resource groups will be created and populated with networking 
     ```
 ## Preparing for a Failover
 
-The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). But something that is worth to remember while preparing for a active/active architecture is that the network needs to be right sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _Pods_ to failover a region.
+The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). But something that is worth to remember while preparing for a active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _Pods_ to hand failover of a region.
 
 ### Next step
 

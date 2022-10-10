@@ -1,13 +1,13 @@
 # Generate your Client-Facing and AKS Ingress Controller TLS Certificates
 
-Now that the [hub-spoke network is provisioned](./03-networking.md), you can follow the steps below to create the TLS certificates for each region that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS ingress controller. The following will describe using certs for instructive purposes only.
+Now that the [hub-spoke network is provisioned](./04-networking.md), you can follow the steps below to create the TLS certificates for each region that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS ingress controller. The following will describe using certs for instructive purposes only.
 
 ## Expected results
 
 Following the steps below you will result the certificates needed for Azure Application Gateway and AKS ingress controller.
 
 | Object                                     | Purpose                                                                                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+|:------------------------------------------ |:------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Two Azure Application Gateway certificates | They are TLS certificates emitted by Let's Encrypt for the Public IP FQDNs and served by the Azure Application Gateway instances in each region. |
 | An AKS ingress controller certificate      | It is a self-signed wildcard cert for TLS on the cluster ingress controller.                                                                     |
 

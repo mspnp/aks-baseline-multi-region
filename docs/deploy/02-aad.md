@@ -83,7 +83,7 @@ This does not configure anything related to workload identity. This configuratio
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline).
+   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-aad.md#kubernetes-rbac-backing-store).
 
 ### Save your work in-progress
 
