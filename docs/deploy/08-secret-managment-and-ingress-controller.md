@@ -53,6 +53,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution. Before going to production, we ensure the image reference comes from your Azure Container Registry by running the sed command that updates the `image:` value to reference your container registry instead of the default public container registry.
 
    ```bash
+   ACR_NAME=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
    sed -i -e "s/docker.io/${ACR_NAME}.azurecr.io/" workload/traefik-region1.yaml
    kubectl apply -f ./workload/traefik-region1.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
    ```
