@@ -887,6 +887,12 @@
                         "config": {
                             "version": "v2"
                         }
+                    },
+                    "azureKeyvaultSecretsProvider": {
+                        "enabled": true,
+                        "config": {
+                            "enableSecretRotation": "false"
+                        }
                     }
                 },
                 "nodeResourceGroup": "[variables('nodeResourceGroupName')]",
