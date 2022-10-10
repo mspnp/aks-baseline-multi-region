@@ -4,6 +4,6 @@ resources:
 - flux.yaml
 images:
 - name: docker.io/fluxcd/flux
-  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/fluxcd/flux
+  newName: acraks4qwrf43wpael4.azurecr.io/fluxcd/flux
 - name: docker.io/library/memcached
-  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/library/memcached
+  newName: acraks4qwrf43wpael4.azurecr.io/library/memcached
