@@ -12,10 +12,6 @@ These files are the ARM templates used in the deployment of this reference imple
 
 Your organization will likely have its own standards for their hub-spoke implementation. Be sure to follow your organizational guidelines.
 
-## Topology Details
-
-See the [AKS baseline Network Topology](./topology.md) for specifics on how this hub-spoke model has its subnets defined and IP space allocation concerns accounted for.
-
 ## Network Watchers
 
 Observability into your network is critical for reliability as it exposes issues in the system that can be immediately targeted and debugged before they produces failures in you applications. [Network Watcher](https://learn.microsoft.com/azure/network-watcher/network-watcher-monitoring-overview), combined with [Traffic Analytics](https://learn.microsoft.com/azure/network-watcher/traffic-analytics) will help provide a perspective into traffic traversing your networks. This reference implementation will _attempt_ to deploy NSG Flow Logs and Traffic Analytics. These features depend on a regional Network Watcher resource being installed on your subscription. Network Watchers are singletons in a subscription, and their creation is _usually_ automatic and  might exist in a resource group you do not have RBAC access to. We strongly encourage you to enable [NSG flow logs](https://learn.microsoft.com/azure/network-watcher/network-watcher-nsg-flow-logging-overview) on your AKS Cluster subnets, Azure Application Gateway, and other subnets that may be a source of traffic into and out of your cluster. Ensure you're sending your NSG Flow Logs to a **V2 Storage Account**.

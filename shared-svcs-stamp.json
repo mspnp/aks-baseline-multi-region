@@ -25,7 +25,7 @@
                 "southcentralus"
             ],
             "metadata": {
-                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters."
+                "description": "AKS Service, Node Pool, and supporting services (Key Vault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters."
             }
         },
         "geoRedundancyLocation": {
