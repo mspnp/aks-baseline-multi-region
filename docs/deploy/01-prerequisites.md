@@ -26,23 +26,16 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 
 1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
 
-   1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
+   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag)
 
-   1. [Register the Federated Identity Credentials preview feature = `FederatedIdentityCredentials`](https://TODO)
-
-   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://TODO)
-
-    ```bash
-   az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
-   az feature register --namespace "Microsoft.ManagedIdentity" -n "FederatedIdentityCredentials"
+   ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
-   
-   # When all say "Registered" then re-register the AKS and related resource providers
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
+
+   # When all say "Registered" then re-register the AKS resource provider
    az provider register --namespace Microsoft.ContainerService
-   az provider register --namespace Microsoft.ManagedIdentity
    ```
 
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
