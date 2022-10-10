@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
 - ns.yaml
 - flux-system/flux.yaml
-- aad-pod-identity.yaml
 - akv-secrets-store-csi.yaml
 - kured.yaml
 images:
