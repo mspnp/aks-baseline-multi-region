@@ -25,6 +25,15 @@
     },
     "containerRegistryId": {
       "value": "<container-registry-id>"
+    },
+    "gitOpsBootstrappingRepoHttpsUrl": {
+      "value": "https://github.com/<your-github-org>/aks-baseline-multi-region"
+    },
+    "gitOpsBootstrappingRepoBranch": {
+      "value": "main"
+    },
+    "gitOpsBootstrappingRepoDirectoryName": {
+      "value": "region1"
     }
   }
 }

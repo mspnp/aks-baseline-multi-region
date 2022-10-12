@@ -48,7 +48,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    EOF
    ```
 
-1. Install the Traefik Ingress Controller.
+1. Install the Traefik ingress controller.
 
 
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution. Before going to production, we ensure the image reference comes from your Azure Container Registry by running the sed command that updates the `image:` value to reference your container registry instead of the default public container registry.

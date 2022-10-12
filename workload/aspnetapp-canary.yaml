@@ -97,9 +97,8 @@ kind: IngressRoute
 metadata:
   name: aspnetapp-ingress
   namespace: a0042
-  annotations:
-    kubernetes.io/ingress.class: traefik-internal-crd
 spec:
+  tls: {}
   entryPoints:
     - websecure
   routes:
