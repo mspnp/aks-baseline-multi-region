@@ -65,9 +65,9 @@ The following two resource groups will be created and populated with networking 
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONA}" @networking/spoke-BU0001A0042.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONB}" @networking/spoke-BU0001A0042.parameters.centralus.json
 
-    # [Enrolling the spokes into the hubs takes about ten minutes to run (each).]
-   RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   # [Enrolling the spokes into the hubs takes about ten minutes to run (each).]
+   RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03
    echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04
    
@@ -76,7 +76,7 @@ The following two resource groups will be created and populated with networking 
     ```
 ## Preparing for a Failover
 
-The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). But something that is worth to remember while preparing for an active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _Pods_ to hand failover of a region.
+The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). Something to remember while preparing for an active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _pods_ to hand failover of a region.
 
 ### Next step
 
