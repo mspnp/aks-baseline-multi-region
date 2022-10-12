@@ -54,7 +54,7 @@ Following the steps below will result in the provisioning of the shared Azure re
 > |:------------------------------------------------------------------------------------------------------------- | :----------: | :-------: | :--------: |
 > | [Log Analytics in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-overview) |              |     ✓     |            |
 > | [Azure Container Registry](https://learn.microsoft.com/azure/container-registry/)                             |              |     ✓     |     ✓      |
-> | [Azure Front Door](https://learn.microsoft.com/azure/frontdoor/front-door-overview)                           |      ✓       |           |            |
+> | [Azure Front Door (classic)](https://learn.microsoft.com/azure/frontdoor/front-door-overview)                 |      ✓       |           |            |
 > | [Azure Firewall Policy](https://learn.microsoft.com/azure/firewall-manager/policy-overview)                   |              |     ✓     |            |
 >
 
@@ -80,7 +80,7 @@ Following the steps below will result in the provisioning of the shared Azure re
 >
 > After this initial design decision at the ACR level, the app team can also consider analyzing how they could tactically expand into [Availability Zones](https://learn.microsoft.com/azure/container-registry/zone-redundancy) as a way of being even more resilient.
 >
-> :bulb: Another benefit of having `Geo-Replication` is that permissions are now centralized in a single registry instance simplifying the security management a lot. Every AKS cluster owns a kubelet _System Managed Identity_ by design, and that identity is the one being granted with permissions against this shared ACR instance. At the same time, these indentities can get individually assigned with role permissions in other Azure resources that are meant to be cluster-specific preventing them from cross pollination effects (i.e. Azure Key Vault). As things develop, the combination of [Availability Zones](https://learn.microsoft.com/azure/container-registry/zone-redundancy), currently in _Preview_, for redundancy within a region, and geo-replication across multiple regions, is the recommendation when looking for the highest reliability and performance of a container registry.
+> :bulb: Another benefit of having geo-replication is that permissions are now centralized in a single registry instance simplifying the security management a lot. Every AKS cluster owns a kubelet _System Managed Identity_ by design, and that identity is the one being granted with permissions against this shared ACR instance. At the same time, these indentities can get individually assigned with role permissions in other Azure resources that are meant to be cluster-specific preventing them from cross pollination effects (i.e. Azure Key Vault). As things develop, the combination of [Availability Zones](https://learn.microsoft.com/azure/container-registry/zone-redundancy) for redundancy within a region, and geo-replication across multiple regions, is the recommendation when looking for the highest reliability and performance of a container registry.
 >
 > **Azure Front Door**
 >

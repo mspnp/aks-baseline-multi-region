@@ -35,7 +35,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 
 - Azure Kubernetes Service (AKS) v1.24
 - Azure Virtual Networks (hub-spoke)
-- Azure Front Door
+- Azure Front Door (classic)
 - Azure Application Gateway (WAF)
 - Azure Container Registry
 - Azure Monitor Log Analytics
