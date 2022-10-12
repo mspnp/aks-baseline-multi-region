@@ -39,19 +39,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: ACR Images
-      id: acr-images
-      uses: Azure/cli@v1.0.0
-      with:
-        inlineScript: |
-          ACR_NAME_BU0001A0042=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-          az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042 --force
-          az acr import --source docker.io/fluxcd/flux:1.21.1 -n $ACR_NAME_BU0001A0042 --force
-          az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME_BU0001A0042 --force
-          az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME_BU0001A0042 --force
-
-        azcliversion: 2.30.0
-
     # -----------------------REGION1------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 1
@@ -69,37 +56,6 @@ jobs:
 
           echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.30.0
-
-    # Set the AKS cluster context - Region 1
-    - name: Set the AKS cluster context - Region 1
-      uses: Azure/aks-set-context@v1
-      if: success() && env.DEPLOY_REGION1 == 'true'
-      with:
-        creds: '${{ secrets.AZURE_CREDENTIALS }}'
-        cluster-name: ${{ steps.aks-cluster-region1.outputs.name }}
-        resource-group: rg-bu0001a0042-03
-
-    # Bake using Kubernetes Kustomize - Region 1
-    # NOTE: you could consider using fluxctl action instead. That could help on deploying Flux from a single step instead of baking and then deploying as demonstrated in here.
-    - name: Bake manifest - Region 1
-      id: aks-kustomize-region1
-      if: success() && env.DEPLOY_REGION1 == 'true'
-      uses: azure/k8s-bake@v1
-      with:
-        renderEngine: 'kustomize'
-        kustomizationPath: 'cluster-manifests/region1/bootstrapping'
-        kubectl-version: 'latest'
-
-    # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 1
-    - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 1
-      id: aks-deploy-region1
-      if: success() && env.DEPLOY_REGION1 == 'true'
-      uses: Azure/k8s-deploy@v1
-      with:
-        namespace: 'cluster-baseline-settings'
-        manifests: |
-          cluster-manifests/base/cluster-baseline-settings/ns.yaml
-          ${{ steps.aks-kustomize-region1.outputs.manifestsBundle }}
 
     - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 1 
       id: enrol-cluster-1
@@ -130,37 +86,6 @@ jobs:
 
           echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.30.0
-
-    # Set the AKS cluster context - Region 2
-    - name: Set the AKS cluster context - Region 2
-      uses: Azure/aks-set-context@v1
-      if: success() && env.DEPLOY_REGION2 == 'true'
-      with:
-        creds: '${{ secrets.AZURE_CREDENTIALS }}'
-        cluster-name: ${{ steps.aks-cluster-region2.outputs.name }}
-        resource-group: rg-bu0001a0042-04
-
-    # Bake using Kubernetes Kustomize - Region 2
-    # NOTE: you could consider using fluxctl action instead. That could help on deploying Flux from a single step instead of baking and then deploying as demonstrated in here.
-    - name: Bake manifest - Region 2
-      id: aks-kustomize-region2
-      if: success() && env.DEPLOY_REGION2 == 'true'
-      uses: azure/k8s-bake@v1
-      with:
-        renderEngine: 'kustomize'
-        kustomizationPath: 'cluster-manifests/region2/bootstrapping'
-        kubectl-version: 'latest'
-
-    # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 2
-    - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 2
-      id: aks-deploy-region2
-      if: success() && env.DEPLOY_REGION2 == 'true'
-      uses: Azure/k8s-deploy@v1
-      with:
-        namespace: 'cluster-baseline-settings'
-        manifests: |
-          cluster-manifests/base/cluster-baseline-settings/ns.yaml
-          ${{ steps.aks-kustomize-region2.outputs.manifestsBundle }}
 
     - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 2
       id: enrol-cluster-2

@@ -1,6 +1,6 @@
 # Deploy the AKS Clusters in two different regions
 
-Now that you [generated your Client-Facing and AKS Ingress Controller TLS Certificates](./05-ca-certificates.md), the next step in the [AKS baseline multi cluster reference implementation](/README.md) is deploying the AKS clusters and its adjacent Azure resources.
+Now that you [generated your client-facing and AKS ingress controller TLS certificates](./05-ca-certificates.md), the next step in the [AKS baseline multi cluster reference implementation](/README.md) is deploying the AKS clusters and its adjacent Azure resources.
 
 ## Expected results
 
@@ -29,6 +29,16 @@ Following the steps below will result in the provisioning of the AKS multi clust
     CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
     echo LOGANALYTICSWORKSPACEID: $LOGANALYTICSWORKSPACEID
     echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID
+    ```
+
+1.  Upload images that are required for bootstrapping.
+
+    ```bash
+    ACR_NAME=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+    echo ACR_NAME: $ACR_NAME
+
+    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME --force
+    az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME --force
     ```
 
 1.  Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
@@ -116,31 +126,21 @@ Following the steps below will result in the provisioning of the AKS multi clust
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json
 
+        TODO: GIT CONFIG
+
         # Region 2
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.centralus.json
+
+        TODO: GIT CONFIG
         ```
 
-    1.  Customize Flux to watch your own repo.
-
-        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically applied to their clusters as changes occur. This reference implementation is for a multi cluster infrastructure, so Flux is going to use Kustomization to deploy regions differenly by using a set of base manifest and patching them when needed.
-
-        Update the Kubernetes manifest file to use the repo for your GitHub username:
-        ```bash
-        sed -i -E "s#(github.com/).+(/aks-baseline-multi-region.git)#\1${GITHUB_USER_NAME_AKS_MRB}\2#" cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
-        ```
-
-        > :bulb: You want to modify your GitOps manifest file to point to your forked repo. Later on you can push changes to your repo, and they will be reflected in the state of your cluster.
-
-    1. Customize your manifests to pull images from your private ACR
+    1.  Customize your GitOps manifests to pull images from your private ACR
 
         ```bash
-        ACR_NAME=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-        echo ACR_NAME: $ACR_NAME
-
         find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME}/" {} +
         ```
 
@@ -149,7 +149,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         > :book: The app team monitors the workflow execution as this is impacting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
-        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize manifests, flux and setup GitHub CD workflow" && git push origin main
+        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize manifests and setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).

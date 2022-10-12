@@ -4,11 +4,3 @@ bases:
 - ../base/
 commonAnnotations:
   region: "1"
-patchesJson6902:
-- target:
-    group: apps
-    version: v1
-    kind: Deployment
-    name: flux
-    namespace: cluster-baseline-settings
-  path: regionalize-flux-git-path.yaml

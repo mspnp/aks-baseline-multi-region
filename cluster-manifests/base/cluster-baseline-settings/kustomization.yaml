@@ -2,12 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - ns.yaml
-- flux-system/flux.yaml
 - kured.yaml
 images:
 - name: docker.io/weaveworks/kured
   newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/weaveworks/kured
-- name: docker.io/fluxcd/flux
-  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/fluxcd/flux
-- name: docker.io/library/memcached
-  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/library/memcached

@@ -27,7 +27,7 @@
         "clusterInternalLoadBalancerIpAddress": {
             "type": "string",
             "metadata": {
-                "description": "The AKS cluster Internal Load Balancer Ip Address"
+                "description": "The AKS cluster Internal Load Balancer IP Address"
             }
         },
         "targetVnetResourceId": {
@@ -95,6 +95,27 @@
         "kubernetesVersion": {
             "defaultValue": "1.24.6",
             "type": "string"
+        },
+        "gitOpsBootstrappingRepoHttpsUrl": {
+            "defaultValue": "https://github.com/mspnp/aks-baseline-multiregion",
+            "type": "string",
+            "metadata": {
+                "description": "Your cluster will be bootstrapped from this git repo."
+            }
+        },
+        "gitOpsBootstrappingRepoBranch": {
+            "defaultValue": "main",
+            "type": "string",
+            "metadata": {
+                "description": "Your cluster will be bootstrapped from this branch in the identified git repo."
+            }
+        },
+        "gitOpsBootstrappingRepoDirectoryName": {
+            "defaultValue": "region1",
+            "type": "string",
+            "metadata": {
+                "description": "Your cluster will be bootstrapped from this directory under cluster-manifests."
+            }
         }
     },
     "variables": {
@@ -1014,6 +1035,72 @@
             ]
         },
         {
+            "type": "Microsoft.KubernetesConfiguration/extensions",
+            "apiVersion": "2021-09-01",
+            "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+            "name": "flux",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
+                "[resourceId('Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToPullAcr')]"
+            ],
+            "properties": {
+                "extensionType": "microsoft.flux",
+                "autoUpgradeMinorVersion": true,
+                "releaseTrain": "Stable",
+                "scope": {
+                    "cluster": {
+                        "releaseNamespace": "flux-system"
+                    }
+                },
+                "configurationSettings": {
+                    "helm-controller.enabled": "false",
+                    "source-controller.enabled": "true",
+                    "kustomize-controller.enabled": "true",
+                    "notification-controller.enabled": "false",
+                    "image-automation-controller.enabled": "false",
+                    "image-reflector-controller.enabled": "false"
+                },
+                "configurationProtectedSettings": {}
+            }
+        },
+        {
+            "type": "Microsoft.KubernetesConfiguration/fluxConfigurations",
+            "apiVersion": "2022-03-01",
+            "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+            "name": "bootstrap",
+            "dependsOn": [
+                "[resourceId('Microsoft.KubernetesConfiguration/extensions', 'flux')]"
+            ],
+            "properties": {
+                "scope": "cluster",
+                "namespace": "flux-system",
+                "sourceKind": "GitRepository",
+                "gitRepository": {
+                    "url": "[parameters('gitOpsBootstrappingRepoHttpsUrl')]",
+                    "timeoutInSeconds": 180,
+                    "syncIntervalInSeconds": 300,
+                    "repositoryRef": {
+                        "branch": "[parameters('gitOpsBootstrappingRepoBranch')]"
+                    },
+                    "sshKnownHosts": "",
+                    "httpsUser": "[json('null')]",
+                    "httpsCACert": "[json('null')]",
+                    "localAuthRef": "[json('null')]"
+                },
+                "kustomizations": {
+                    "unifed" : {
+                        "path": "[concat('./cluster-manifests/', parameters('gitOpsBootstrappingRepoDirectoryName'))]",
+                        "dependsOn": [],
+                        "timeoutInSeconds": 300,
+                        "syncIntervalInSeconds": 300,
+                        "retryIntervalInSeconds": "[json('null')]",
+                        "prune": true,
+                        "force": false
+                    }
+                }
+            }
+        },
+        {
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1624,6 +1711,7 @@
                             "kube-system",
                             "gatekeeper-system",
                             "azure-arc",
+                            "flux-system",
                             "cluster-baseline-settings"
                         ]
                     },
@@ -1685,7 +1773,8 @@
                         "value": [
                             "kube-system",
                             "gatekeeper-system",
-                            "azure-arc"
+                            "azure-arc",
+                            "flux-system"
                         ]
                     },
                     "effect": {
@@ -1715,6 +1804,7 @@
                             "kube-system",
                             "gatekeeper-system",
                             "azure-arc",
+                            "flux-system",
                             "cluster-baseline-settings"
                         ]
                     },
@@ -1741,7 +1831,8 @@
                         "value": [
                             "kube-system",
                             "gatekeeper-system",
-                            "azure-arc"
+                            "azure-arc",
+                            "flux-system"
                         ]
                     },
                     "effect": {
