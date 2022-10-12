@@ -27,7 +27,7 @@ env:
   DEPLOY_REGION2: 'true'
 jobs:
   deploy:
-    name: Deploy AKS cluster and Flux
+    name: Deploy AKS cluster and bootstrap with GitOps
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
