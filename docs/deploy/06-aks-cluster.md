@@ -27,17 +27,16 @@ Following the steps below will result in the provisioning of the AKS multi clust
     ```bash
     LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
     CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
+    export ACR_NAME_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
     echo LOGANALYTICSWORKSPACEID: $LOGANALYTICSWORKSPACEID
     echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID
+    echo ACR_NAME_AKS_MRB: $ACR_NAME_AKS_MRB
     ```
 
 1. Upload images to your Azure Container Registry that are referenced bootstrapping.
 
     ```bash
-    export ACR_NAME_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-    echo ACR_NAME_AKS_MRB: $ACR_NAME_AKS_MRB
-
-    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME_AKS_MRB --force
+    az acr import --source docker.io/weaveworks/kured:1.10.1 -n $ACR_NAME_AKS_MRB --force
     az acr import --source docker.io/library/traefik:v2.8.1 -n $ACR_NAME_AKS_MRB --force
     ```
 
