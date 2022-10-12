@@ -5,4 +5,4 @@ resources:
 - kured.yaml
 images:
 - name: docker.io/weaveworks/kured
-  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/weaveworks/kured
+  newName: acraks4qwrf43wpael4.azurecr.io/weaveworks/kured
