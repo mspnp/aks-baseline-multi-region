@@ -66,7 +66,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
    ```
 
-1. Contextualize the steps above for your second AKS Cluster to install the Traefik Ingress Controller
+1. Contextualize the steps above for your second AKS cluster to install the ingress controller
 
    ```bash
    # Get the AKS Ingress Controller Managed Identity details.
