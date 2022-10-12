@@ -58,7 +58,7 @@
         "aksIngressControllerCertificate": {
             "type": "string",
             "metadata": {
-                "description": "The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate."
+                "description": "The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate."
             }
         },
         "clusterAuthorizedIPRanges": {

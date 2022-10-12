@@ -4,11 +4,11 @@
 #
 # 1. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:
 #    - the secrets values
-#        - AZURE_CREDENTIALS                         The Azure Service Principal that will deploy the AKS cluster in your Azure subscription. For more information please take a look at https://github.com/Azure/login#configure-deployment-credentials
-#        - APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure Key Vault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
-#        - APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure Key Vault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
-#        - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
-#    - the cluster parameter
+#        - AZURE_CREDENTIALS: The Azure Service Principal that will deploy the AKS cluster in your Azure subscription. For more information please take a look at https://github.com/Azure/login#configure-deployment-credentials
+#        - APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64: The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure Key Vault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
+#        - APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64: The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure Key Vault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
+#        - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64: The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
+#    - the cluster parameter files
 #        -  azuredeploy.parameters.region1.json
 #        -  azuredeploy.parameters.region2.json
 #
