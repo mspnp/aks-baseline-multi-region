@@ -766,6 +766,64 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
+  name: middlewaretcps.traefik.containo.us
+spec:
+  group: traefik.containo.us
+  names:
+    kind: MiddlewareTCP
+    listKind: MiddlewareTCPList
+    plural: middlewaretcps
+    singular: middlewaretcp
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MiddlewareTCP is a specification for a MiddlewareTCP resource.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MiddlewareTCPSpec holds the MiddlewareTCP configuration.
+            properties:
+              ipWhiteList:
+                description: TCPIPWhiteList holds the TCP ip white list configuration.
+                properties:
+                  sourceRange:
+                    items:
+                      type: string
+                    type: array
+                type: object
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
   name: ingressroutetcps.traefik.containo.us
 spec:
   group: traefik.containo.us
@@ -1005,20 +1063,23 @@ status:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
   name: tlsoptions.traefik.containo.us
-
 spec:
   group: traefik.containo.us
   names:
     kind: TLSOption
+    listKind: TLSOptionList
     plural: tlsoptions
     singular: tlsoption
   scope: Namespaced
   versions:
-  - names: v1alpha1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: IngressRoute is an Ingress CRD specification.
+        description: TLSOption is a specification for a TLSOption resource.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -1033,155 +1094,49 @@ spec:
           metadata:
             type: object
           spec:
-            description: IngressRouteSpec is a specification for a IngressRouteSpec
-              resource.
+            description: TLSOptionSpec configures TLS for an entry point.
             properties:
-              entryPoints:
+              alpnProtocols:
                 items:
                   type: string
                 type: array
-              routes:
+              cipherSuites:
                 items:
-                  description: Route contains the set of routes.
-                  properties:
-                    kind:
-                      enum:
-                      - Rule
-                      type: string
-                    match:
-                      type: string
-                    middlewares:
-                      items:
-                        description: MiddlewareRef is a ref to the Middleware resources.
-                        properties:
-                          name:
-                            type: string
-                          namespace:
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      type: array
-                    priority:
-                      type: integer
-                    services:
-                      items:
-                        description: Service defines an upstream to proxy traffic.
-                        properties:
-                          kind:
-                            enum:
-                            - Service
-                            - TraefikService
-                            type: string
-                          name:
-                            description: Name is a reference to a Kubernetes Service
-                              object (for a load-balancer of servers), or to a TraefikService
-                              object (service load-balancer, mirroring, etc). The
-                              differentiation between the two is specified in the
-                              Kind field.
-                            type: string
-                          namespace:
-                            type: string
-                          passHostHeader:
-                            type: boolean
-                          port:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            x-kubernetes-int-or-string: true
-                          responseForwarding:
-                            description: ResponseForwarding holds configuration for
-                              the forward of the response.
-                            properties:
-                              flushInterval:
-                                type: string
-                            type: object
-                          scheme:
-                            type: string
-                          serversTransport:
-                            type: string
-                          sticky:
-                            description: Sticky holds the sticky configuration.
-                            properties:
-                              cookie:
-                                description: Cookie holds the sticky configuration
-                                  based on cookie.
-                                properties:
-                                  httpOnly:
-                                    type: boolean
-                                  name:
-                                    type: string
-                                  sameSite:
-                                    type: string
-                                  secure:
-                                    type: boolean
-                                type: object
-                            type: object
-                          strategy:
-                            type: string
-                          weight:
-                            description: Weight should only be specified when Name
-                              references a TraefikService object (and to be precise,
-                              one that embeds a Weighted Round Robin).
-                            type: integer
-                        required:
-                        - name
-                        type: object
-                      type: array
-                  required:
-                  - kind
-                  - match
-                  type: object
+                  type: string
                 type: array
-              tls:
-                description: "TLS contains the TLS certificates configuration of the
-                  routes. To enable Let's Encrypt, use an empty TLS struct, e.g. in
-                  YAML: \n \t tls: {} # inline format \n \t tls: \t   secretName:
-                  # block format"
+              clientAuth:
+                description: ClientAuth defines the parameters of the client authentication
+                  part of the TLS connection, if any.
                 properties:
-                  certResolver:
+                  clientAuthType:
+                    description: ClientAuthType defines the client authentication
+                      type to apply.
+                    enum:
+                    - NoClientCert
+                    - RequestClientCert
+                    - RequireAnyClientCert
+                    - VerifyClientCertIfGiven
+                    - RequireAndVerifyClientCert
                     type: string
-                  domains:
-                    items:
-                      description: Domain holds a domain name with SANs.
-                      properties:
-                        main:
-                          type: string
-                        sans:
-                          items:
-                            type: string
-                          type: array
-                      type: object
-                    type: array
-                  options:
-                    description: Options is a reference to a TLSOption, that specifies
-                      the parameters of the TLS connection.
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  secretName:
+                  secretNames:
                     description: SecretName is the name of the referenced Kubernetes
                       Secret to specify the certificate details.
-                    type: string
-                  store:
-                    description: Store is a reference to a TLSStore, that specifies
-                      the parameters of the TLS store.
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    type: object
+                    items:
+                      type: string
+                    type: array
                 type: object
-            required:
-            - routes
+              curvePreferences:
+                items:
+                  type: string
+                type: array
+              maxVersion:
+                type: string
+              minVersion:
+                type: string
+              preferServerCipherSuites:
+                type: boolean
+              sniStrict:
+                type: boolean
             type: object
         required:
         - metadata
@@ -1189,19 +1144,75 @@ spec:
         type: object
     served: true
     storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
   name: tlsstores.traefik.containo.us
-
 spec:
   group: traefik.containo.us
   names:
     kind: TLSStore
+    listKind: TLSStoreList
     plural: tlsstores
     singular: tlsstore
   scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TLSStore is a specification for a TLSStore resource.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TLSStoreSpec configures a TLSStore resource.
+            properties:
+              defaultCertificate:
+                description: DefaultCertificate holds a secret name for the TLSOption
+                  resource.
+                properties:
+                  secretName:
+                    description: SecretName is the name of the referenced Kubernetes
+                      Secret to specify the certificate details.
+                    type: string
+                required:
+                - secretName
+                type: object
+            required:
+            - defaultCertificate
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -1475,20 +1486,23 @@ status:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
   name: serverstransports.traefik.containo.us
-
 spec:
   group: traefik.containo.us
   names:
     kind: ServersTransport
+    listKind: ServersTransportList
     plural: serverstransports
     singular: serverstransport
   scope: Namespaced
   versions:
-  - names: v1alpha1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: IngressRoute is an Ingress CRD specification.
+        description: ServersTransport is a specification for a ServersTransport resource.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -1503,155 +1517,62 @@ spec:
           metadata:
             type: object
           spec:
-            description: IngressRouteSpec is a specification for a IngressRouteSpec
-              resource.
+            description: ServersTransportSpec options to configure communication between
+              Traefik and the servers.
             properties:
-              entryPoints:
+              certificatesSecrets:
+                description: Certificates for mTLS.
                 items:
                   type: string
                 type: array
-              routes:
-                items:
-                  description: Route contains the set of routes.
-                  properties:
-                    kind:
-                      enum:
-                      - Rule
-                      type: string
-                    match:
-                      type: string
-                    middlewares:
-                      items:
-                        description: MiddlewareRef is a ref to the Middleware resources.
-                        properties:
-                          name:
-                            type: string
-                          namespace:
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      type: array
-                    priority:
-                      type: integer
-                    services:
-                      items:
-                        description: Service defines an upstream to proxy traffic.
-                        properties:
-                          kind:
-                            enum:
-                            - Service
-                            - TraefikService
-                            type: string
-                          name:
-                            description: Name is a reference to a Kubernetes Service
-                              object (for a load-balancer of servers), or to a TraefikService
-                              object (service load-balancer, mirroring, etc). The
-                              differentiation between the two is specified in the
-                              Kind field.
-                            type: string
-                          namespace:
-                            type: string
-                          passHostHeader:
-                            type: boolean
-                          port:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            x-kubernetes-int-or-string: true
-                          responseForwarding:
-                            description: ResponseForwarding holds configuration for
-                              the forward of the response.
-                            properties:
-                              flushInterval:
-                                type: string
-                            type: object
-                          scheme:
-                            type: string
-                          serversTransport:
-                            type: string
-                          sticky:
-                            description: Sticky holds the sticky configuration.
-                            properties:
-                              cookie:
-                                description: Cookie holds the sticky configuration
-                                  based on cookie.
-                                properties:
-                                  httpOnly:
-                                    type: boolean
-                                  name:
-                                    type: string
-                                  sameSite:
-                                    type: string
-                                  secure:
-                                    type: boolean
-                                type: object
-                            type: object
-                          strategy:
-                            type: string
-                          weight:
-                            description: Weight should only be specified when Name
-                              references a TraefikService object (and to be precise,
-                              one that embeds a Weighted Round Robin).
-                            type: integer
-                        required:
-                        - name
-                        type: object
-                      type: array
-                  required:
-                  - kind
-                  - match
-                  type: object
-                type: array
-              tls:
-                description: "TLS contains the TLS certificates configuration of the
-                  routes. To enable Let's Encrypt, use an empty TLS struct, e.g. in
-                  YAML: \n \t tls: {} # inline format \n \t tls: \t   secretName:
-                  # block format"
+              disableHTTP2:
+                description: Disable HTTP/2 for connections with backend servers.
+                type: boolean
+              forwardingTimeouts:
+                description: Timeouts for requests forwarded to the backend servers.
                 properties:
-                  certResolver:
-                    type: string
-                  domains:
-                    items:
-                      description: Domain holds a domain name with SANs.
-                      properties:
-                        main:
-                          type: string
-                        sans:
-                          items:
-                            type: string
-                          type: array
-                      type: object
-                    type: array
-                  options:
-                    description: Options is a reference to a TLSOption, that specifies
-                      the parameters of the TLS connection.
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  secretName:
-                    description: SecretName is the name of the referenced Kubernetes
-                      Secret to specify the certificate details.
-                    type: string
-                  store:
-                    description: Store is a reference to a TLSStore, that specifies
-                      the parameters of the TLS store.
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    type: object
+                  dialTimeout:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: The amount of time to wait until a connection to
+                      a backend server can be established. If zero, no timeout exists.
+                    x-kubernetes-int-or-string: true
+                  idleConnTimeout:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: The maximum period for which an idle HTTP keep-alive
+                      connection will remain open before closing itself.
+                    x-kubernetes-int-or-string: true
+                  responseHeaderTimeout:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: The amount of time to wait for a server's response
+                      headers after fully writing the request (including its body,
+                      if any). If zero, no timeout exists.
+                    x-kubernetes-int-or-string: true
                 type: object
-            required:
-            - routes
+              insecureSkipVerify:
+                description: Disable SSL certificate verification.
+                type: boolean
+              maxIdleConnsPerHost:
+                description: If non-zero, controls the maximum idle (keep-alive) to
+                  keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
+                type: integer
+              peerCertURI:
+                description: Defines the URI used to match against SAN URIs during
+                  the server's certificate verification.
+                type: string
+              rootCAsSecrets:
+                description: Add cert file for self-signed certificate.
+                items:
+                  type: string
+                type: array
+              serverName:
+                description: ServerName used to contact the server.
+                type: string
             type: object
         required:
         - metadata
@@ -1659,3 +1580,9 @@ spec:
         type: object
     served: true
     storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

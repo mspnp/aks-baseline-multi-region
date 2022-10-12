@@ -31,14 +31,14 @@ Following the steps below will result in the provisioning of the AKS multi clust
     echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID
     ```
 
-1.  Upload images that are required for bootstrapping.
+1.  Upload images to your Azure Container Registry that are referenced bootstrapping.
 
     ```bash
-    ACR_NAME=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-    echo ACR_NAME: $ACR_NAME
+    ACR_NAME_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+    echo ACR_NAME_AKS_MRB: $ACR_NAME_AKS_MRB
 
-    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME --force
-    az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME --force
+    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME_AKS_MRB --force
+    az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME_AKS_MRB --force
     ```
 
 1.  Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
@@ -141,7 +141,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
     1.  Customize your GitOps manifests to pull images from your private ACR
 
         ```bash
-        find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME}/" {} +
+        find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME_AKS_MRB}/" {} +
         ```
 
     1.  The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
