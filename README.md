@@ -42,10 +42,10 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 
 #### In-cluster OSS components
 
-- [Flux GitOps Operator](https://fluxcd.io)
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
+- [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.8/routing/providers/kubernetes-ingress/)
 - [Azure Workload Identity](https://github.com/Azure/azure-workload-identity) _[AKS-managed add-on]_
-- [Azure Key Vault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
+- [Azure Key Vault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure) _[AKS-managed add-on]_
 - [Kured](https://learn.microsoft.com/azure/aks/node-updates-kured)
 
 ![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-baseline-multi-cluster.png)

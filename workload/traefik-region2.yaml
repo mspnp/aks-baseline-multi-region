@@ -14,15 +14,14 @@ data:
         addEntryPointsLabels = true
         addServicesLabels = true
     [accessLog]
-      filePath = "/data/access.log"
-      bufferingSize = 100
+      format = "json"
     [global]
       # prevent Traefik from checking newer versions in production
       checknewversion = false
       # prevent Traefik from collecting and sending stats from production
       sendanonymoususage = false
     [log]
-      level = "ERROR"
+      level = "INFO"
       format = "json"
     [api]
       dashboard = false
@@ -35,7 +34,6 @@ data:
         filename = "/config/traefik.toml"
         watch = true
       [providers.kubernetesCRD]
-        ingressClass = "traefik-internal-crd"
         namespaces = ["a0042"]
     # Enable gzip compression
     [http.middlewares]
@@ -105,7 +103,6 @@ metadata:
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
-    aadpodidbinding: podmi-ingress-controller
 spec:
   replicas: 2
   selector:
@@ -144,8 +141,10 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:v2.5.3 -n <your-acr-instance-name>
-      - image: docker.io/library/traefik:v2.5.3
+        # az acr import --source docker.io/library/traefik:v2.8.1 -n <your-acr-instance-name>
+        # and then set this to
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.8.1
+      - image: docker.io/library/traefik:v2.8.1
         name: traefik-ingress-controller
         resources:
           requests:
@@ -211,7 +210,7 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: "aks-ingress-contoso-com-tls-secret-csi-akv"
+              secretProviderClass: aks-ingress-contoso-com-tls-secret-csi-akv
         - name: data
           emptyDir: {}
       nodeSelector:
