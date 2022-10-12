@@ -22,7 +22,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    echo KEYVAULT_NAME_BU0001A0042_03: $KEYVAULT_NAME_BU0001A0042_03
    
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -f -
-   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   apiVersion: secrets-store.csi.x-k8s.io/v1
    kind: SecretProviderClass
    metadata:
      name: aks-ingress-contoso-com-tls-secret-csi-akv
@@ -30,8 +30,9 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    spec:
      provider: azure
      parameters:
-       usePodIdentity: "false"
        clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_03
+       usePodIdentity: "false"
+       useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_BU0001A0042_03
        objects:  |
          array:
@@ -77,7 +78,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    echo KEYVAULT_NAME_BU0001A0042_04: $KEYVAULT_NAME_BU0001A0042_04
    
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -f -
-   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   apiVersion: secrets-store.csi.x-k8s.io/v1
    kind: SecretProviderClass
    metadata:
      name: aks-ingress-contoso-com-tls-secret-csi-akv
@@ -85,8 +86,9 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    spec:
      provider: azure
      parameters:
-       usePodIdentity: "false"
        clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_BU0001A0042_04
+       usePodIdentity: "false"
+       useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_BU0001A0042_04
        objects:  |
          array:
