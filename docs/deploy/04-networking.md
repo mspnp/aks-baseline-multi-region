@@ -76,7 +76,7 @@ The following two resource groups will be created and populated with networking 
     ```
 ## Preparing for a Failover
 
-The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). Something to remember while preparing for an active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _pods_ to hand failover of a region.
+The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). Something to remember while preparing for an active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _pods_ to handle failover of a region.
 
 ### Next step
 
