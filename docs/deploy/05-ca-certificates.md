@@ -9,7 +9,7 @@ Following the steps below you will result the certificates needed for Azure Appl
 | Object                                     | Purpose |
 |:------------------------------------------ |:------- |
 | Two Azure Application Gateway certificates | They are TLS certificates emitted by Let's Encrypt for the Public IP FQDNs and served by the Azure Application Gateway instances in each region. |
-| An AKS ingress controller certificate      | A self-signed wildcard cert for TLS on the cluster ingress. controller. |
+| An AKS ingress controller certificate      | A self-signed wildcard cert for TLS on the cluster ingress controller. |
 
 ## Steps
 
