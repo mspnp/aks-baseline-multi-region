@@ -94,14 +94,14 @@ Following the steps below will result in the provisioning of the AKS multi clust
         gh secret set AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 -b"${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB}"
         ```
 
-    1. Copy the GitHub workflow file into the expected directory
+    1. Copy the GitHub workflow file into the expected directory.
 
         ```bash
         mkdir -p .github/workflows
         cat github-workflow/aks-deploy.yaml > .github/workflows/aks-deploy.yaml
         ```
 
-    1. Generate cluster parameter file per region
+    1. Generate cluster parameter file per region.
 
         Verify all variables are populated:
 
@@ -136,7 +136,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         sed -i "s#<your-github-org>#${GITHUB_USER_NAME_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
         ```
 
-    1. Customize your GitOps manifests to pull images from your private ACR
+    1. Customize your GitOps manifests to pull images from your private ACR.
 
         ```bash
         find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME_AKS_MRB}/" {} +
@@ -152,7 +152,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
 
-    1. You can continue only after the GitHub Workflow completes successfully
+    1. You can continue only after the GitHub Workflow completes successfully.
 
         ```bash
         until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ $GH_WF_STATUS == "completed" ]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
