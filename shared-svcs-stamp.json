@@ -314,6 +314,9 @@
             "name": "PodFailedScheduledQuery",
             "type": "microsoft.insights/scheduledqueryrules",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                 "[resourceId('Microsoft.OperationsManagement/solutions',concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')'))]"
+            ],
             "apiVersion": "2021-08-01",
             "tags": {},
             "properties": {
