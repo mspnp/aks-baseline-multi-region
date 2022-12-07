@@ -44,6 +44,10 @@ This section will help you to validate the workload is exposed correctly and res
    > :eyes: After executing the command below, you should immediately return to your previous terminal and observe that the web application is responding with `HTTP 200` even during the outages.
 
    ```bash
+   APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   echo APPGW_FQDN_BU0001A0042_03: $APPGW_FQDN_BU0001A0042_03
+   echo APPGW_FQDN_BU0001A0042_04: $APPGW_FQDN_BU0001A0042_04
    # [This whole execution takes about 40 minutes.]
    az network application-gateway stop -g rg-bu0001a0042-03 -n $APPGW_FQDN_BU0001A0042_03 && \ # first incident
    az network application-gateway start -g rg-bu0001a0042-03 -n $APPGW_FQDN_BU0001A0042_03 && \
