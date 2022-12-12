@@ -51,20 +51,17 @@ Following the steps below will result in the provisioning of the AKS multi clust
     echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04
     ```
 
-    1. Create the Azure Credentials for the GitHub CD workflow.
+    1. Create the Azure Credentials for the [GitHub CD workflow](https://learn.microsoft.com/azure/developer/github/connect-from-azure).
+        :warning: Set your GitHub Account
 
         ```bash
-        # Create an Azure Service Principal
-        #
-        # This command will generate a sp.json file in the format expected by GitHub Actions for Azure.
-        # This is accomplished by using the deprecated --sdk-auth flag. For alternatives, including using
-        # Federated Identity, see https://github.com/Azure/login#configure-deployment-credentials.
-        az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
-        APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
-        echo APP_ID: $APP_ID
+        GITHUB_ACCOUNT_NAME=YOUR-GITHUB-ACCOUNT-NAME-GOES-HERE
 
-        # Wait for propagation
-        until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for Azure AD propagation" && sleep 5; done
+        # Creating a User Managed Identity which will be Federated to GitHub Action
+        az deployment group create -g rg-bu0001a0042-shared -f ghaction-federated-identity.bicep -p gitAccount="$GITHUB_ACCOUNT_NAME"
+        
+        export APP_ID=$(az deployment group show -g rg-bu0001a0042-shared -n ghaction-federated-identity --query 'properties.outputs.clientId.value' -o tsv)
+        echo APP_ID: $APP_ID
 
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
         az role assignment create --assignee $APP_ID --role 'Contributor'
@@ -73,25 +70,32 @@ Following the steps below will result in the provisioning of the AKS multi clust
         az role assignment create --assignee $APP_ID --role 'User Access Administrator'
         ```
 
-    1. Create `AZURE_CREDENTIALS` secret in your GitHub repository.
+    1. Create secrets in your GitHub repository.
 
         > :bulb: Use the content from the `sp.json` file.
 
         ```bash
-        gh secret set AZURE_CREDENTIALS -b"$(cat sp.json)"
+        export TENANT_ID=$(az deployment group show -g rg-bu0001a0042-shared -n ghaction-federated-identity --query 'properties.outputs.tenantId.value' -o tsv)
+        echo $TENANT_ID
+        export SUBSCRIPTION_ID=$(az account show | jq -r '.id')
+        echo SUBSCRIPTION_ID: $SUBSCRIPTION_ID
+        
+        gh secret set AZURE_CLIENT_ID -b"${APP_ID}"  --repo $GITHUB_ACCOUNT_NAME/aks-baseline-multi-region
+        gh secret set AZURE_TENANT_ID -b"${TENANT_ID}"  --repo $GITHUB_ACCOUNT_NAME/aks-baseline-multi-region
+        gh secret set AZURE_SUBSCRIPTION_ID  -b"${SUBSCRIPTION_ID}"  --repo $GITHUB_ACCOUNT_NAME/aks-baseline-multi-region
         ```
 
     1. Create `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64` secret in your GitHub repository.
 
         ```bash
-        gh secret set APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB}"
-        gh secret set APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB}"
+        gh secret set APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB}" --repo $GITHUB_ACCOUNT_NAME/aks-baseline-multi-region
+        gh secret set APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB}" --repo $GITHUB_ACCOUNT_NAME/aks-baseline-multi-region
         ```
 
     1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository.
 
         ```bash
-        gh secret set AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 -b"${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB}"
+        gh secret set AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 -b"${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB}" --repo $GITHUB_ACCOUNT_NAME/aks-baseline-multi-region
         ```
 
     1. Copy the GitHub workflow file into the expected directory.
@@ -115,7 +119,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID && \
         echo GITHUB_USER_NAME_AKS_MRB: $GITHUB_USER_NAME_AKS_MRB
         ```
-        
+
         Update each region's cluster parameter file:
 
         ```bash

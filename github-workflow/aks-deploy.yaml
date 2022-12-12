@@ -25,6 +25,9 @@ on:
 env:
   DEPLOY_REGION1: 'true'
   DEPLOY_REGION2: 'true'
+permissions:
+      id-token: write
+      contents: read
 jobs:
   deploy:
     name: Deploy AKS cluster and bootstrap with GitOps
@@ -37,8 +40,9 @@ jobs:
     - name: Azure Login
       uses: Azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     # -----------------------REGION1------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 1
