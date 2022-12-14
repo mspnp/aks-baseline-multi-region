@@ -26,5 +26,3 @@ resource ghActionFederatedIdentity 'Microsoft.ManagedIdentity/userAssignedIdenti
 }
 
 output clientId string = ghActionFederatedIdentity.properties.clientId
-output tenantId string = ghActionFederatedIdentity.properties.tenantId
-output principalId string = ghActionFederatedIdentity.properties.principalId
