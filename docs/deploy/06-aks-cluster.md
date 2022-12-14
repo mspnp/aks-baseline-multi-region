@@ -65,7 +65,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_CLIENTID --role 'User Access Administrator'
         ```
 
-    1. Create secrets in your GitHub repository.
+    1. Create federated identity secrets in your GitHub repository.
 
         > :bulb: Use the content from the `sp.json` file.
 
