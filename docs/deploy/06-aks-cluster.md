@@ -51,21 +51,18 @@ Following the steps below will result in the provisioning of the AKS multi clust
     echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04
     ```
 
-    1. Create the Azure Credentials for the [GitHub CD workflow](https://learn.microsoft.com/azure/developer/github/connect-from-azure).
-        :warning: Set your GitHub Account
+    1. Assign standard permission on the subccription for the identity which will use the [GitHub CD workflow](https://learn.microsoft.com/azure/developer/github/connect-from-azure).
 
         ```bash
-        # Creating a User Managed Identity which will be Federated to GitHub Action
-        az deployment group create -g rg-bu0001a0042-shared -f ghaction-federated-identity.bicep -p gitAccount="$GITHUB_USER_NAME_AKS_MRB"
-        
-        export GitHubFederatedIdentity_ClientID=$(az deployment group show -g rg-bu0001a0042-shared -n ghaction-federated-identity --query 'properties.outputs.clientId.value' -o tsv)
-        echo GitHubFederatedIdentity_ClientID: $GitHubFederatedIdentity_ClientID
+        # Getting the deployed identity to assign standard permissions
+        export GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
+        echo GITHUB_FEDERATED_IDENTITY_CLIENTID: $GITHUB_FEDERATED_IDENTITY_CLIENTID
 
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
-        az role assignment create --assignee $GitHubFederatedIdentity_ClientID --role 'Contributor'
+        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_CLIENTID --role 'Contributor'
 
         # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (e.g. AKS-managed Internal Load Balancer, ACR, Managed Identities, etc.)
-        az role assignment create --assignee $GitHubFederatedIdentity_ClientID --role 'User Access Administrator'
+        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_CLIENTID --role 'User Access Administrator'
         ```
 
     1. Create secrets in your GitHub repository.
@@ -76,7 +73,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
         echo SUBSCRIPTION_ID: $SUBSCRIPTION_ID
         
-        gh secret set AZURE_CLIENT_ID -b"${GitHubFederatedIdentity_ClientID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set AZURE_CLIENT_ID -b"${GITHUB_FEDERATED_IDENTITY_CLIENTID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
         gh secret set AZURE_TENANT_ID -b"${TENANTID_AZURERBAC_AKS_MRB}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
         gh secret set AZURE_SUBSCRIPTION_ID  -b"${SUBSCRIPTION_ID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
         ```

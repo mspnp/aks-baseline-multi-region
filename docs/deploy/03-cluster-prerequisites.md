@@ -87,7 +87,7 @@ Following the steps below will result in the provisioning of the shared Azure re
 > :book: The app team is about to deploy Azure Application instances in every region ahead of their corresponding cluster. It represents a new challenge for them as they need to globally manage the traffic from their clients, and route to the different regions to achieve enhanced reliability; aligning to the [Geode cloud design pattern](https://learn.microsoft.com/azure/architecture/patterns/geodes). They plan to have both regions initially active, and respond from the one which is closest to the client sending the HTTP requests. Therefore, it results in an active/active availability strategy, but they need to failover to a single region in case of a region outage. As a consequence of this last requirement, the load balancing can not be a simple round robin over the closest regions, but it also needs to be aware of the health of their backends, and derive the traffic accordingly. Two well known Azure services can perform Multi-Geo Redundancy and Closest Region Routing, they are: Azure Front Door and Azure Traffic Manager. To make final decision between these two, the Contoso organization is also seeing added benefits in Azure Front Door like better performance at the TLS negotiation, rate limiting capability and IP ACL-ing.
 
 ```bash
-az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2
+az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2 gitHubAccountName=$GITHUB_USER_NAME_AKS_MRB
 ```
 
 ### Next step
