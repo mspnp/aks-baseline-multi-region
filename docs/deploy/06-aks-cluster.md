@@ -54,7 +54,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
     1. Assign required permissions to the [GitHub workflow's](https://learn.microsoft.com/azure/developer/github/connect-from-azure) managed (federated) identity.
 
         ```bash
-        # Getting the deployed identity to assign standard permissions
+        # Get the managed identity to assign necessary deployment permissions
         export GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
         echo GITHUB_FEDERATED_IDENTITY_CLIENTID: $GITHUB_FEDERATED_IDENTITY_CLIENTID
 
