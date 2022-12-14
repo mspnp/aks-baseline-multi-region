@@ -64,7 +64,7 @@
             "type": "string",
             "minLength": 1,
             "metadata": {
-                "description": "Your git account where the repo is your cloned."
+                "description": "Your GitHub account where you've forked the repo."
             }
         },
         "gitHubRepoBranch": {
@@ -72,7 +72,7 @@
             "defaultValue": "main",
             "minLength": 1,
             "metadata": {
-                "description": "The branch used for run your workflow. For Jobs not tied to an environment, include the ref path for branch/tag based on the ref path used for triggering the workflow: repo:< Organization/Repository >:ref:< ref path>"
+                "description": "The branch used to run your workflow. For Jobs not tied to an environment, include the ref path for branch/tag based on the ref path used for triggering the workflow: repo:< Organization/Repository >:ref:< ref path>"
             }
         }
     },
@@ -544,9 +544,9 @@
             },
             "resources": [
                 {
-                    "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+                    "type": "federatedIdentityCredentials",
                     "apiVersion": "2022-01-31-preview",
-                    "name": "[format('{0}/{1}', 'ghActionFederatedIdentity', 'ghActionFederatedIdentity')]",
+                    "name": "ghActionFederatedIdentity",
                     "properties": {
                         "audiences": [
                             "api://AzureADTokenExchange"
