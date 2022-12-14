@@ -59,6 +59,21 @@
             "metadata": {
                 "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://learn.microsoft.com/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
             }
+        },
+        "gitHubAccountName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "Your GitHub account where you've forked the repo."
+            }
+        },
+        "gitHubRepoBranch": {
+            "type": "string",
+            "defaultValue": "main",
+            "minLength": 1,
+            "metadata": {
+                "description": "The branch used to run your workflow. For Jobs not tied to an environment, include the ref path for branch/tag based on the ref path used for triggering the workflow: repo:< Organization/Repository >:ref:< ref path>"
+            }
         }
     },
     "variables": {
@@ -135,7 +150,7 @@
                         ]
                     }
                 }
-          ]
+            ]
         },
         {
             "type": "Microsoft.OperationalInsights/workspaces",
@@ -315,7 +330,7 @@
             "type": "microsoft.insights/scheduledqueryrules",
             "location": "[parameters('location')]",
             "dependsOn": [
-                 "[resourceId('Microsoft.OperationsManagement/solutions',concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')'))]"
+                "[resourceId('Microsoft.OperationsManagement/solutions',concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')'))]"
             ],
             "apiVersion": "2021-08-01",
             "tags": {},
@@ -388,7 +403,7 @@
         {
             "type": "Microsoft.Network/frontdoorwebapplicationfirewallpolicies",
             "apiVersion": "2020-04-01",
-            "name":  "[variables('frontDoorPolicyName')]",
+            "name": "[variables('frontDoorPolicyName')]",
             "location": "Global",
             "properties": {
                 "policySettings": {
@@ -425,15 +440,15 @@
                     {
                         "name": "MultiClusterBackendPool",
                         "properties": {
-                            "backends":[
+                            "backends": [
                                 {
-                                "address": "bicycle.cloudapp.azure.com",
-                                "httpPort": 80,
-                                "httpsPort": 443,
-                                "priority": 1,
-                                "weight": 50,
-                                "enabledState": "Enabled",
-                                "backendHostHeader": "bicycle.cloudapp.azure.com"
+                                    "address": "bicycle.cloudapp.azure.com",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "enabledState": "Enabled",
+                                    "backendHostHeader": "bicycle.cloudapp.azure.com"
                                 }
                             ],
                             "healthProbeSettings": {
@@ -518,6 +533,32 @@
                 "enabledState": "Enabled",
                 "friendlyName": "[variables('frontDoorName')]"
             }
+        },
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "apiVersion": "2022-01-31-preview",
+            "name": "ghActionFederatedIdentity",
+            "location": "[parameters('location')]",
+            "metadata": {
+                "description": "Create the Azure Credentials for the GitHub CD workflow"
+            },
+            "resources": [
+                {
+                    "type": "federatedIdentityCredentials",
+                    "apiVersion": "2022-01-31-preview",
+                    "name": "ghActionFederatedIdentity",
+                    "properties": {
+                        "audiences": [
+                            "api://AzureADTokenExchange"
+                        ],
+                        "issuer": "https://token.actions.githubusercontent.com",
+                        "subject": "[format('repo:{0}/aks-baseline-multi-region:ref:refs/heads/{1}', parameters('gitHubAccountName'), parameters('gitHubRepoBranch'))]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'ghActionFederatedIdentity')]"
+                    ]
+                }
+            ]
         }
     ],
     "outputs": {
@@ -548,6 +589,10 @@
         "baseFirewallPoliciesId": {
             "type": "string",
             "value": "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesBaseName'))]"
+        },
+        "githubFederatedIdentityClientId": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'ghActionFederatedIdentity')).clientId]"
         }
     }
 }
