@@ -54,8 +54,9 @@ Following the steps below will result in the provisioning of the shared Azure re
 > |:------------------------------------------------------------------------------------------------------------- | :----------: | :-------: | :--------: |
 > | [Log Analytics in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-overview) |              |     ✓     |            |
 > | [Azure Container Registry](https://learn.microsoft.com/azure/container-registry/)                             |              |     ✓     |     ✓      |
-> | [Azure Front Door (classic)](https://learn.microsoft.com/azure/frontdoor/classic-overview)                 |      ✓       |           |            |
+> | [Azure Front Door (classic)](https://learn.microsoft.com/azure/frontdoor/classic-overview)                    |      ✓       |           |            |
 > | [Azure Firewall Policy](https://learn.microsoft.com/azure/firewall-manager/policy-overview)                   |              |     ✓     |            |
+> | [Managed identity with GitHub federation](https://learn.microsoft.com/azure/developer/github/connect-from-azure) |              |     ✓     |            |
 >
 
 > **Azure Monitor logs solution**

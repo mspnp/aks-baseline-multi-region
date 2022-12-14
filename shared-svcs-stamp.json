@@ -61,7 +61,7 @@
             }
         },
         "gitHubAccountName": {
-            "type": "string",            
+            "type": "string",
             "minLength": 1,
             "metadata": {
                 "description": "Your git account where the repo is your cloned."
@@ -535,28 +535,30 @@
             }
         },
         {
-            "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
-            "apiVersion": "2022-01-31-preview",
-            "name": "[format('{0}/{1}', 'ghActionFederatedIdentity', 'ghActionFederatedIdentity')]",
-            "properties": {
-                "audiences": [
-                    "api://AzureADTokenExchange"
-                ],
-                "issuer": "https://token.actions.githubusercontent.com",
-                "subject": "[format('repo:{0}/aks-baseline-multi-region:ref:refs/heads/{1}', parameters('gitHubAccountName'), parameters('gitHubRepoBranch'))]"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'ghActionFederatedIdentity')]"
-            ]
-        },
-        {
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
             "apiVersion": "2022-01-31-preview",
             "name": "ghActionFederatedIdentity",
             "location": "[parameters('location')]",
             "metadata": {
                 "description": "Create the Azure Credentials for the GitHub CD workflow"
-            }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+                    "apiVersion": "2022-01-31-preview",
+                    "name": "[format('{0}/{1}', 'ghActionFederatedIdentity', 'ghActionFederatedIdentity')]",
+                    "properties": {
+                        "audiences": [
+                            "api://AzureADTokenExchange"
+                        ],
+                        "issuer": "https://token.actions.githubusercontent.com",
+                        "subject": "[format('repo:{0}/aks-baseline-multi-region:ref:refs/heads/{1}', parameters('gitHubAccountName'), parameters('gitHubRepoBranch'))]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'ghActionFederatedIdentity')]"
+                    ]
+                }
+            ]
         }
     ],
     "outputs": {

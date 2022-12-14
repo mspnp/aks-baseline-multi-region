@@ -67,8 +67,6 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
     1. Create federated identity secrets in your GitHub repository.
 
-        > :bulb: Use the content from the `sp.json` file.
-
         ```bash
         export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
         echo SUBSCRIPTION_ID: $SUBSCRIPTION_ID
