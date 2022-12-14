@@ -51,7 +51,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
     echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04
     ```
 
-    1. Assign standard permission on the subccription for the identity which will use the [GitHub CD workflow](https://learn.microsoft.com/azure/developer/github/connect-from-azure).
+    1. Assign required permissions to the [GitHub workflow's](https://learn.microsoft.com/azure/developer/github/connect-from-azure) managed (federated) identity.
 
         ```bash
         # Getting the deployed identity to assign standard permissions
