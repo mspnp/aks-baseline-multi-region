@@ -11,10 +11,10 @@ This section will help you to validate the workload is exposed correctly and res
 1. Get your Azure Application Gateway instance names
 
    ```bash
-   APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
-   APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
-   echo APPGW_FQDN_BU0001A0042_03: $APPGW_FQDN_BU0001A0042_03
-   echo APPGW_FQDN_BU0001A0042_04: $APPGW_FQDN_BU0001A0042_04
+   APPGW_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   APPGW_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   echo APPGW_BU0001A0042_03: $APPGW_BU0001A0042_03
+   echo APPGW_BU0001A0042_04: $APPGW_BU0001A0042_04
    ```
 
 1. Get your Azure Front Door public DNS name
@@ -44,15 +44,15 @@ This section will help you to validate the workload is exposed correctly and res
    > :eyes: After executing the command below, you should immediately return to your previous terminal and observe that the web application is responding with `HTTP 200` even during the outages.
 
    ```bash
-   APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
-   APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
-   echo APPGW_FQDN_BU0001A0042_03: $APPGW_FQDN_BU0001A0042_03
-   echo APPGW_FQDN_BU0001A0042_04: $APPGW_FQDN_BU0001A0042_04
+   APPGW_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   APPGW_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   echo APPGW_BU0001A0042_03: $APPGW_BU0001A0042_03
+   echo APPGW_BU0001A0042_04: $APPGW_BU0001A0042_04
    # [This whole execution takes about 40 minutes.]
-   az network application-gateway stop -g rg-bu0001a0042-03 -n $APPGW_FQDN_BU0001A0042_03 && \ # first incident
-   az network application-gateway start -g rg-bu0001a0042-03 -n $APPGW_FQDN_BU0001A0042_03 && \
-   az network application-gateway stop -g rg-bu0001a0042-04 -n $APPGW_FQDN_BU0001A0042_04 && \ # second incident
-   az network application-gateway start -g rg-bu0001a0042-04 -n $APPGW_FQDN_BU0001A0042_04
+   az network application-gateway stop -g rg-bu0001a0042-03 -n $APPGW_BU0001A0042_03 && \ # first incident
+   az network application-gateway start -g rg-bu0001a0042-03 -n $APPGW_BU0001A0042_03 && \
+   az network application-gateway stop -g rg-bu0001a0042-04 -n $APPGW_BU0001A0042_04 && \ # second incident
+   az network application-gateway start -g rg-bu0001a0042-04 -n $APPGW_BU0001A0042_04
    ```
 
    :bulb: As an important note around scalability, please take into account that after a total failover is effective, your infrastructure in the remaining region must be capable of handling 100% of the traffic. Therefore, the recommendation is to plan for this sort of event, and prepare all related backend systems to cope with it. It doesn't necessarily mean that you should purchase resources to keep them idle waiting for these very rare outages. But you want to cover every piece of infrastructure to ensure they are elastic (scalable) enough to handle that sudden increase in load. For instance [Azure Application Gateway v2 autoscaling](https://learn.microsoft.com/azure/application-gateway/application-gateway-autoscaling-zone-redundant) will kick in under these circumstances along with the Cluster Autoscaler configured as part of the [AKS baseline](https://github.com/mspnp/aks-baseline). Something else you might want to consider setting up is [Horizontal Pod Autoscaling](https://learn.microsoft.com/azure/aks/concepts-scale#horizontal-pod-autoscaler) and [Resource Quotas](https://learn.microsoft.com/azure/aks/operator-best-practices-scheduler#enforce-resource-quotas). The latter must be configured to allow up to 2X the normal capacity if you plan for full region take over. Certainly to avoid cascade failures, this will require to also contemplate out-of-cluster resources that are affected by your workload (e.g. databases, external APIs, etc.). They also must be ready to absorb as much load as you consider appropriate in your regional outage contingency plan.
