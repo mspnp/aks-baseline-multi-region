@@ -55,19 +55,22 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
         ```bash
         # Get the managed identity to assign necessary deployment permissions
-        export GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
-        echo GITHUB_FEDERATED_IDENTITY_CLIENTID: $GITHUB_FEDERATED_IDENTITY_CLIENTID
+        export GITHUB_FEDERATED_IDENTITY_PRINCIPALID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityPrincipalId.value' -o tsv)
+        echo GITHUB_FEDERATED_IDENTITY_PRINCIPALID: $GITHUB_FEDERATED_IDENTITY_PRINCIPALID
 
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
-        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_CLIENTID --role 'Contributor'
+        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'Contributor'
 
         # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (e.g. AKS-managed Internal Load Balancer, ACR, Managed Identities, etc.)
-        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_CLIENTID --role 'User Access Administrator'
+        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'User Access Administrator'
         ```
 
     1. Create federated identity secrets in your GitHub repository.
 
         ```bash
+        export GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
+        echo GITHUB_FEDERATED_IDENTITY_CLIENTID: $GITHUB_FEDERATED_IDENTITY_CLIENTID
+
         export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
         echo SUBSCRIPTION_ID: $SUBSCRIPTION_ID
         
