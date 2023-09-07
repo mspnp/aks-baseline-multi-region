@@ -593,6 +593,10 @@
         "githubFederatedIdentityClientId": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'ghActionFederatedIdentity')).clientId]"
+        },
+         "githubFederatedIdentityPrincipalId": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'ghActionFederatedIdentity')).principalId]"
         }
     }
 }

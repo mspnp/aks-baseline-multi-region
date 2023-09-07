@@ -24,20 +24,6 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
-
-   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag)
-
-   ```bash
-   az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
-
-   # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
-
-   # When all say "Registered" then re-register the AKS resource provider
-   az provider register --namespace Microsoft.ContainerService
-   ```
-
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 
 1. Login GitHub Cli
