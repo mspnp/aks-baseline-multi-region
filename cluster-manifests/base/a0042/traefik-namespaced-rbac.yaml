@@ -1,3 +1,4 @@
+#https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
 kind: ServiceAccount
 apiVersion: v1
 metadata:
@@ -44,6 +45,7 @@ rules:
     verbs:
       - update
   - apiGroups:
+      - traefik.io
       - traefik.containo.us
     resources:
       - middlewares
@@ -73,6 +75,6 @@ roleRef:
   kind: ClusterRole
   name: traefik-ingress-controller
 subjects:
-- kind: ServiceAccount
-  name: traefik-ingress-controller
-  namespace: a0042
+  - kind: ServiceAccount
+    name: traefik-ingress-controller
+    namespace: a0042

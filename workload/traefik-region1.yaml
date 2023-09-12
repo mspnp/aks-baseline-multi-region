@@ -114,6 +114,7 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  minReadySeconds: 0
   template:
     metadata:
       annotations:
@@ -141,10 +142,11 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:v2.8.1 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:v2.10.4 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.8.1
-      - image: docker.io/library/traefik:v2.8.1
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.10.4
+      - image: docker.io/library/traefik:v2.10.4
+        imagePullPolicy: IfNotPresent
         name: traefik-ingress-controller
         resources:
           requests:
@@ -199,6 +201,8 @@ spec:
           - name: ssl-csi
             mountPath: /certs
             readOnly: true
+          - name: tmp
+            mountPath: /tmp            
         args:
         - --configfile=/config/traefik.toml
       volumes:
@@ -213,5 +217,9 @@ spec:
               secretProviderClass: aks-ingress-contoso-com-tls-secret-csi-akv
         - name: data
           emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+      securityContext:
+        fsGroup: 65532
       nodeSelector:
        agentpool: npuser01
