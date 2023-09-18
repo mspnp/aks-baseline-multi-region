@@ -92,15 +92,8 @@ See the centralized logs associated to each cluster, which are captured in `Cont
 1. Navigate under General and click Logs. Then execute the following query
 
    ```
-   let podInventory = KubePodInventory
-   | distinct ContainerID, ContainerName, ClusterId, ClusterName
-   | project-rename Name=ContainerName;
-   ContainerLog
-   | project-away Name
-   | join kind=inner
-       podInventory
-   on ContainerID
-   | project TimeGenerated, LogEntry, Computer, Name=strcat(ClusterName, "/", Name), ContainerID
+  ContainerLogV2
+   | project TimeGenerated, LogMessage, Computer, ContainerName, ContainerId
    | order by TimeGenerated desc
    ```
 
