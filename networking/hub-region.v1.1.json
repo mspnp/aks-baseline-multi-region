@@ -533,7 +533,7 @@
                                     },
                                     {
                                         "ruleType": "ApplicationRule",
-                                        "name": "aad-auth",
+                                        "name": "entra-id-auth",
                                         "protocols": [
                                             {
                                                 "protocolType": "Https",

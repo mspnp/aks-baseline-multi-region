@@ -62,28 +62,28 @@ This does not configure anything related to workload identity. This configuratio
    ```bash
    # create a single admin for both clusters
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
-   AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a0042-admin
-   AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0042AdminChangeMe --query id -o tsv)
+   OBJECTNAME_USER_CLUSTERADMIN=bu0001a0042-admin
+   OBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${OBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${OBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0042AdminChangeMe --query id -o tsv)
    echo TENANTDOMAIN_K8SRBAC: $TENANTDOMAIN_K8SRBAC
-   echo AADOBJECTNAME_USER_CLUSTERADMIN: $AADOBJECTNAME_USER_CLUSTERADMIN
-   echo AADOBJECTID_USER_CLUSTERADMIN: $AADOBJECTID_USER_CLUSTERADMIN
+   echo OBJECTNAME_USER_CLUSTERADMIN: $OBJECTNAME_USER_CLUSTERADMIN
+   echo OBJECTID_USER_CLUSTERADMIN: $OBJECTID_USER_CLUSTERADMIN
    
    # create the admin groups
-   AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
-   AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
-   export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
-   export AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
-   echo AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203: $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203
-   echo AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204: $AADOBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204
-   echo AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB
-   echo AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB
+   OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
+   OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
+   export OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
+   export OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB=$(az ad group create --display-name $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --mail-nickname $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204 --description "Principals in this group are cluster admins in the bu0001a004204 cluster." --query id -o tsv)
+   echo OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203: $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203
+   echo OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204: $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204
+   echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB
+   echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB
    
    # assign the admin as new member in both groups
-   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
-   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $AADOBJECTID_USER_CLUSTERADMIN
+   az ad group member add -g $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $OBJECTID_USER_CLUSTERADMIN
+   az ad group member add -g $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $OBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-aad.md#kubernetes-rbac-backing-store).
+   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-microsoft-entra-id.md#kubernetes-rbac-backing-store).
 
 ### Save your work in-progress
 

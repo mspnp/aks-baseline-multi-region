@@ -11,7 +11,7 @@
     "appInstanceId": {
       "value": "04"
     },
-    "clusterAdminAadGroupObjectId": {
+    "clusterAdminEntraGroupObjectId": {
       "value": "<azure-ad-aks-admin-group-object-id>"
     },
     "k8sControlPlaneAuthorizationTenantId": {
