@@ -1,10 +1,10 @@
-# Prep for Azure Active Directory Integration
+# Prep for Microsoft Entra Integration
 
-Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to prepare Azure AD for Kubernetes role-based access control (RBAC). This will ensure you have an Azure AD security group(s) and user(s) assigned for group-based Kubernetes control plane access.
+Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to prepare Microsoft Entra ID for Kubernetes role-based access control (RBAC). This will ensure you have a Microsoft Entra security group(s) and user(s) assigned for group-based Kubernetes control plane access.
 
 ## Expected results
 
-Following the steps below you will result in an Azure AD configuration that will be used for Kubernetes control plane (Cluster API) authorization.
+Following the steps below you will result in a Microsoft Entra configuration that will be used for Kubernetes control plane (Cluster API) authorization.
 
 | Object                             | Purpose                                                                                                                  |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -16,7 +16,7 @@ This does not configure anything related to workload identity. This configuratio
 
 ## Steps
 
-> :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
+> :book: The Contoso Bicycle Microsoft Entra team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be Microsoft Entra ID-backed and access granted based on a user's identity or directory group membership.
 
 1. Login into your Azure subscription, and save your Azure subscription's tenant id.
 
@@ -37,9 +37,9 @@ This does not configure anything related to workload identity. This configuratio
 
    :warning: Do not procced if the tenant highlighted in red is not correct. Start over by `az login` into the proper Azure subscription.
 
-1. From the list printed in the previous step, select an Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication and login into.
+1. From the list printed in the previous step, select a Microsoft Entra tenant to associate your Kubernetes RBAC Cluster API authentication and login into.
 
-   > :bulb: Skip this `az login` command if you plan to use your current user account's Azure AD tenant for Kubernetes authorization.
+   > :bulb: Skip this `az login` command if you plan to use your current user account's Microsoft Entra tenant for Kubernetes authorization.
 
    ```bash
    az login --allow-no-subscriptions -t <Replace-With-ClusterApi-AzureAD-TenantId>
@@ -57,7 +57,7 @@ This does not configure anything related to workload identity. This configuratio
 
 1. Create a single "break-glass" cluster administrator user for your AKS clusters, and add to both cluster admin security groups being created that are going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
-   :book: The app team requested a single admin user that needs to have access in both clusters. The Azure AD Admin team create two different groups, one per cluster to home the new admin.
+   :book: The app team requested a single admin user that needs to have access in both clusters. The Microsoft Entra Admin team create two different groups, one per cluster to home the new admin.
 
    ```bash
    # create a single admin for both clusters

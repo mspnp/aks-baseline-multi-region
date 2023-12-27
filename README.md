@@ -53,7 +53,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 ## Deploy the reference implementation
 
 - [ ] Begin by ensuring you [install and meet the prerequisites](./docs/deploy/01-prerequisites.md)
-- [ ] [Plan your Azure Active Directory integration](./docs/deploy/02-aad.md)
+- [ ] [Plan your Microsoft Entra integration](./docs/deploy/02-aad.md)
 - [ ] [Deploy the shared services for your clusters](./docs/deploy/03-cluster-prerequisites.md)
 - [ ] [Build the hub-spoke network](./docs/deploy/04-networking.md)
 - [ ] [Procure client-facing and AKS ingress controller TLS certificates](./docs/deploy/05-ca-certificates.md)
