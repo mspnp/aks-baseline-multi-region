@@ -38,7 +38,7 @@ After you are done exploring your deployed [AKS baseline multi cluster](/README.
    for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='rg-bu0001a0042-04'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group rg-bu0001a0042-04; done
    ```
 
-1. If any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.
+1. If any temporary changes were made to Microsoft Entra ID or Azure RBAC permissions consider removing those as well.
 
 ### Next step
 

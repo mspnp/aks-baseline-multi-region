@@ -1,6 +1,6 @@
 # Deploy the AKS cluster prerequisites and shared services
 
-In the prior step, you [prep for Azure Active Directory integration](./02-aad.md); now follows the next step in the [AKS baseline multi cluster reference implementation](/README.md) which is deploying the shared service instances.
+In the prior step, you [prep for Microsoft Entra integration](./02-auth.md); now follows the next step in the [AKS baseline multi cluster reference implementation](/README.md) which is deploying the shared service instances.
 
 ## Expected results
 

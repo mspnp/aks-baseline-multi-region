@@ -1,6 +1,6 @@
 # Deploy the Hub-Spoke Network Topology
 
-In the prior step, you've set up an Azure AD tenant to fullfil your [deployed share resources](./03-cluster-prerequisites.md) needs for this reference implementation deployment. Now we will start with the network resources.
+In the prior step, you've set up a Microsoft Entra tenant to fullfil your [deployed share resources](./03-cluster-prerequisites.md) needs for this reference implementation deployment. Now we will start with the network resources.
 
 ## Subscription and resource group topology
 
