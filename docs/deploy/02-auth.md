@@ -53,7 +53,7 @@ This does not configure anything related to workload identity. This configuratio
    echo "${TENANTS}" | grep -z ${TENANTID_K8SRBAC_AKS_MRB}
    ```
 
-   :warning: If the tenant highlighted in red is not correct, start over by login into the proper Azure Directory Tenant for Kubernetes Cluster API authorization.
+   :warning: If the tenant highlighted in red is not correct, start over by login into the proper Microsoft Entra ID tenant for Kubernetes cluster API authorization.
 
 1. Create a single "break-glass" cluster administrator user for your AKS clusters, and add to both cluster admin security groups being created that are going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
