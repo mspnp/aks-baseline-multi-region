@@ -67,4 +67,4 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 
 ### Next step
 
-:arrow_forward: [Prep for Microsoft Entra integration](./02-aad.md)
+:arrow_forward: [Prep for Microsoft Entra integration](./02-auth.md)
