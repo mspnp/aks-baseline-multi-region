@@ -4,13 +4,13 @@ In the prior step, you've set up a Microsoft Entra tenant to fullfil your [deplo
 
 ## Subscription and resource group topology
 
-This reference implementation is split across several resource groups in a single subscription. This is to replicate the fact that many organizations will split certain responsibilities into specialized subscriptions (e.g. regional hubs/vwan in a _Connectivity_ subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology (such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/decision-guides/subscriptions/).) This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
+This reference implementation is split across several resource groups in a single subscription. This is to replicate the fact that many organizations will split certain responsibilities into specialized subscriptions (such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology (such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/decision-guides/subscriptions/).) This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
 
 ## Expected results
 
 ### Resource Groups
 
-The following two resource groups will be created and populated with networking resources in the steps below.
+The following two resource groups will be created and populated with networking resources in the following steps.
 
 | Name                              | Purpose                                                                                                                              |
 |:--------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------ |
@@ -36,7 +36,7 @@ The following two resource groups will be created and populated with networking 
    az group create -n rg-enterprise-networking-spokes -l centralus
    ```
 
-   :bulb: The groups' default location does not matter, as it's not tied to the resource locations. (Please note that typically these resource groups would have already existed.)
+   :bulb: The groups' default location does not matter, as it's not tied to the resource locations. (These resource groups would have typically already existed.)
 
 1. Create two hubs, and two spokes that will be home to the AKS clusters and its adjacent resources and then enroll the spokes into the hubs.
 
@@ -44,9 +44,9 @@ The following two resource groups will be created and populated with networking 
    >
    > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` and `westus2` hubs (created below) will be `10.200.3.0/24` and `10.200.4.0/24` respectively.
    >
-   > Note: The subnets for Azure Bastion and on-prem connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
+   > Note: The subnets for Azure Bastion and cross-premises connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
-   The Azure Firewall Base Policies for the Contoso organization were created by the networking team as another shared resource. This way, they became available for each regional cluster that requires inherit them and create children Azure Firewall policy rules on top of. An important Azure Resource Manager requirement at the time writing this is that all derivates Azure Firewall Policies must reside on the same parent's location.
+   The Azure Firewall Base Policies for the Contoso organization were created by the networking team as another shared resource. This way, they became available for each regional cluster that requires inherit them and create children Azure Firewall Policy rules on top of. An important Azure Resource Manager requirement at the time writing this is that all derivates Azure Firewall Policies must reside on the same parent's location.
 
    ```bash
    # [Creating the generic hubs takes about ten minutes to run (each).]
@@ -61,7 +61,7 @@ The following two resource groups will be created and populated with networking 
    RESOURCEID_VNET_HUB_REGIONB=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-regionB --query properties.outputs.hubVnetId.value -o tsv)
    echo RESOURCEID_VNET_HUB_REGIONA: $RESOURCEID_VNET_HUB_REGIONA
    echo RESOURCEID_VNET_HUB_REGIONB: $RESOURCEID_VNET_HUB_REGIONB
-   
+
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONA}" @networking/spoke-BU0001A0042.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONB}" @networking/spoke-BU0001A0042.parameters.centralus.json
 
@@ -70,13 +70,14 @@ The following two resource groups will be created and populated with networking 
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03
    echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04
-   
+
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionA -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2  @networking/hub-region.parameters.eastus2.json
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionB -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
     ```
+
 ## Preparing for a Failover
 
-The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). Something to remember while preparing for an active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _pods_ to handle failover of a region.
+The [AKS baseline](https://github.com/mspnp/aks-baseline) has already covered the hows and whys of the current [network topology segmentation](https://github.com/mspnp/aks-baseline/blob/main/networking/topology.md). Something to remember while preparing for an active/active architecture is that the network needs to be right-sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more *pods* to handle failover of a region.
 
 ### Next step
 

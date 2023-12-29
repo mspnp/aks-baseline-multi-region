@@ -6,7 +6,7 @@ This cluster, as with any workload, should be managed via an automated deploymen
 
 ## Steps
 
-This workflow file deploys the cluster into an already-existing virtual network and Microsoft Entra ID configuration as set up by the steps in the [main README.md file](../README.md).
+This workflow file deploys the cluster into an already-existing Azure Virtual Network and Microsoft Entra ID configuration as set up by the steps in the [main README.md file](../README.md).
 
 ## Secrets
 
@@ -14,7 +14,7 @@ Secrets should not be stored in this file, but instead should be stored as part 
 
 ## Workload
 
-The workload is NOT part of this deployment.  This is a deployment of the infrastructure only.  Separation of infrastructure and workload is recommended as it allows you to have distinct lifecycle and operational concerns.
+The workload is NOT part of this deployment. This is a deployment of the infrastructure only. Separation of infrastructure and workload is recommended as it allows you to have distinct lifecycle and operational concerns.
 
 ## Next Steps
 
@@ -22,5 +22,5 @@ Review the yaml file to see the types of steps you'd need to perform. Also consi
 
 ## See also
 
-* [GitHub Actions](https://help.github.com/actions)
-* [GitHub Actions with Azure Kubernetes Service](https://learn.microsoft.com/azure/aks/kubernetes-action)
+- [GitHub Actions](https://help.github.com/actions)
+- [GitHub Actions with Azure Kubernetes Service](https://learn.microsoft.com/azure/aks/kubernetes-action)

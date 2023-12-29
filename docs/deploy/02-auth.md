@@ -1,16 +1,16 @@
 # Prep for Microsoft Entra Integration
 
-Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to prepare Microsoft Entra ID for Kubernetes role-based access control (RBAC). This will ensure you have a Microsoft Entra security group(s) and user(s) assigned for group-based Kubernetes control plane access.
+Now that you have the [prerequisites](./01-prerequisites.md) met, follow these steps to prepare Microsoft Entra ID for Kubernetes role-based access control (RBAC). This will ensure you have a Microsoft Entra security group(s) and user(s) assigned for group-based Kubernetes control plane access.
 
 ## Expected results
 
-Following the steps below you will result in a Microsoft Entra configuration that will be used for Kubernetes control plane (Cluster API) authorization.
+These steps will result in a Microsoft Entra configuration that will be used for Kubernetes control plane (Cluster API) authorization.
 
 | Object                             | Purpose                                                                                                                  |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | A Cluster Admin User               | Represents at least one break-glass cluster admin user.                                                                  |
 | Two Cluster Admin Security Groups  | Will be mapped to `cluster-admin` Kubernetes role.                                                                       |
-| Two Cluster Admin Group Membership | Association between the Cluster Admin User(s) and the two Cluster Admin Security Groups.                                 |
+| Two Cluster Admin Group Membership | Association between the cluster admin user(s) and the two cluster admin security groups.                                 |
 
 This does not configure anything related to workload identity. This configuration is exclusively to set up RBAC access to perform cluster management.
 
@@ -18,7 +18,7 @@ This does not configure anything related to workload identity. This configuratio
 
 > :book: The Contoso Bicycle Microsoft Entra team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be Microsoft Entra ID-backed and access granted based on a user's identity or directory group membership.
 
-1. Login into your Azure subscription, and save your Azure subscription's tenant id.
+1. Login into your Azure subscription, and save your Azure subscription's tenant ID.
 
    ```bash
    az login
@@ -29,7 +29,7 @@ This does not configure anything related to workload identity. This configuratio
 
    > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
 
-1. Validate your saved Azure subscription's tenant id is correct
+1. Validate your saved Azure subscription's tenant ID is correct
 
    ```bash
    echo "${TENANTS}" | grep -z ${TENANTID_AZURERBAC_AKS_MRB}
@@ -45,7 +45,7 @@ This does not configure anything related to workload identity. This configuratio
    az login --allow-no-subscriptions -t <Replace-With-ClusterApi-AzureAD-TenantId>
    ```
 
-1. Validate that the new saved tenant id is correct one for Kubernetes Cluster API authorization
+1. Validate that the new saved tenant ID is correct one for Kubernetes Cluster API authorization
 
    ```bash
    export TENANTID_K8SRBAC_AKS_MRB=$(az account show --query tenantId -o tsv)
@@ -67,7 +67,7 @@ This does not configure anything related to workload identity. This configuratio
    echo TENANTDOMAIN_K8SRBAC: $TENANTDOMAIN_K8SRBAC
    echo OBJECTNAME_USER_CLUSTERADMIN: $OBJECTNAME_USER_CLUSTERADMIN
    echo OBJECTID_USER_CLUSTERADMIN: $OBJECTID_USER_CLUSTERADMIN
-   
+
    # create the admin groups
    OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
    OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
@@ -77,13 +77,13 @@ This does not configure anything related to workload identity. This configuratio
    echo OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204: $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204
    echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB
    echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB
-   
+
    # assign the admin as new member in both groups
    az ad group member add -g $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $OBJECTID_USER_CLUSTERADMIN
    az ad group member add -g $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $OBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, please refer to our [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-microsoft-entra-id.md#kubernetes-rbac-backing-store).
+   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, refer to the [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-microsoft-entra-id.md#kubernetes-rbac-backing-store).
 
 ### Save your work in-progress
 

@@ -1,21 +1,21 @@
 # Generate your Client-Facing and AKS Ingress Controller TLS Certificates
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), you can follow the steps below to create the TLS certificates for each region that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS ingress controller.
+Now that the [hub-spoke network is provisioned](./04-networking.md), you can follow these steps to create the TLS certificates for each region that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS ingress controller.
 
 ## Expected results
 
-Following the steps below you will result the certificates needed for Azure Application Gateway and AKS ingress controller.
+These steps will result the certificates needed for Azure Application Gateway and AKS ingress controller.
 
 | Object                                     | Purpose |
 |:------------------------------------------ |:------- |
-| Two Azure Application Gateway certificates | They are TLS certificates emitted by Let's Encrypt for the Public IP FQDNs and served by the Azure Application Gateway instances in each region. |
+| Two Azure Application Gateway certificates | They are TLS certificates emitted by Let's Encrypt for the public IP FQDNs and served by the Azure Application Gateway instances in each region. |
 | An AKS ingress controller certificate      | A self-signed wildcard cert for TLS on the cluster ingress controller. |
 
 ## Steps
 
 1. Generate client-facing TLS certificates for each region.
 
-   > :book: The Contoso Bicycle organization has an important policy that every internet-facing endpoint exposed over the HTTPs protocol must use a trusted CA certificate, and it is not allowed to share a common wildcard certificate between them. Therefore, the organization needs to procure individual trusted CA certificates for all their Public IPs' FQDNs in the different regions. The Azure Application Gateway instances are going to be serving these certificates in front of every region they get deployed to.
+   > :book: The Contoso Bicycle organization has an important policy that every internet-facing endpoint exposed over the HTTPS protocol must use a trusted CA certificate, and it is not allowed to share a common wildcard certificate between them. Therefore, the organization needs to procure individual trusted CA certificates for all their Public IPs' FQDNs in the different regions. The Azure Application Gateway instances are going to be serving these certificates in front of every region they get deployed to.
 
    ```bash
    # call the Let's Encrypt certificate generation script for both PIPs' FQDNs
