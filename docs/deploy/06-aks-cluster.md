@@ -4,7 +4,7 @@ Now that you [generated your client-facing and AKS ingress controller TLS certif
 
 ## Expected results
 
-Following the steps below will result in the provisioning of the AKS multi cluster solution.
+Following these steps will result in the provisioning of the AKS multi cluster solution.
 
 | Object                         | Purpose                                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -14,13 +14,13 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
 ## Steps
 
-> :book: The selected locations are `East US 2` and `Central US` which are Azure paired regions. All in all, the team resolution is to have a single CI/CD pipeline that is aware of the multiple clusters being deployed, and could take measures in case of errors while deploying for a particular region. This pipeline uses a common stamp for the cluster creation with different parameter files per region, and it will be also enrolling the AKS Clusters in GitOps to help with the initial desired state. From there, Flux will take care of the AKS cluster bootstrapping process. In this case, the app team decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application. They know that every change in their cluster stamp or workflow will impact most probably all clusters. But there are some special cases they want to contemplate like adding a new cluster to their fleet. For those scenarios, they are tagging the pipeline execution to exclude and remain them untouched from that particular execution.
+> :book: The selected locations are `East US 2` and `Central US` which are Azure paired regions. All in all, the team resolution is to have a single CI/CD pipeline that is aware of the multiple clusters being deployed, and could take measures in case of errors while deploying for a particular region. This pipeline uses a common stamp for the cluster creation with different parameter files per region, and it will be also enrolling the AKS Clusters in GitOps to help with the initial desired state. From there, Flux will take care of the AKS cluster bootstrapping process. In this case, the app team decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application. They know that every change in their cluster stamp or workflow will probably affect all clusters. But there are some special cases they want to contemplate like adding a new cluster to their fleet. For those scenarios, they are tagging the pipeline execution to exclude and remain them untouched from that particular execution.
 
 ![The AKS Clusters deployment diagram depicting the proposed cluster fleet topology running from different regions.](./images/aks-cluster-mgmnt.png)
 
 > :bulb: Multi Cluster and Federation's repos could be a monorepo or multiple repos as displayed from the digram above. In this reference implementation, the workload manifests, and ARM templates are shipped together from a single repo.
 
-> :bulb: Another interesting use case that this architecture could help with is when AKS introduces _Preview Features_ in the same or different regions. They could in some case be a breaking in an upcoming major releases like happened with `containerd` as the new default runtime. In those situtations, you might want to do some A/B testing without fully disrupting your live and stable AKS cluster.
+> :bulb: Another interesting use case that this architecture could help with is when AKS introduces *preview features* in the same or different regions. They could in some case be a breaking in an upcoming major releases like happened with `containerd` as the new default runtime. In those situtations, you might want to do some A/B testing without fully disrupting your live and stable AKS cluster.
 
 1. Obtain shared services resource details
 
@@ -61,7 +61,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
         az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'Contributor'
 
-        # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (e.g. AKS-managed Internal Load Balancer, ACR, Managed Identities, etc.)
+        # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (such as AKS-managed Internal Load Balancer, Azure Container Registry, Managed Identities, etc.)
         az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'User Access Administrator'
         ```
 
@@ -73,7 +73,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
         export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
         echo SUBSCRIPTION_ID: $SUBSCRIPTION_ID
-        
+
         gh secret set AZURE_CLIENT_ID -b"${GITHUB_FEDERATED_IDENTITY_CLIENTID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
         gh secret set AZURE_TENANT_ID -b"${TENANTID_AZURERBAC_AKS_MRB}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
         gh secret set AZURE_SUBSCRIPTION_ID  -b"${SUBSCRIPTION_ID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
@@ -134,7 +134,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
         sed -i "s#<your-github-org>#${GITHUB_USER_NAME_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
         ```
 
-    1. Customize your GitOps manifests to pull images from your private ACR.
+    1. Customize your GitOps manifests to pull images from your private Azure Container Registry.
 
         ```bash
         find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME_AKS_MRB}/" {} +
@@ -142,18 +142,18 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
     1. The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
 
-        > :book: The app team monitors the workflow execution as this is impacting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
+        > :book: The app team monitors the workflow execution as this is affecting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
         git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize manifests and setup GitHub CD workflow" && git push origin main
         ```
 
-        > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
+        > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/using-workflows/creating-starter-workflows-for-your-organization).
 
     1. You can continue only after the GitHub Workflow completes successfully.
 
         ```bash
-        until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ $GH_WF_STATUS == "completed" ]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
+        until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ $GH_WF_STATUS == "completed"]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
         ```
 
     1. Get the cluster names for regions 1 and 2.
@@ -174,7 +174,7 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
     1. Get AKS `kubectl` credentials.
 
-        > In the [Microsoft Entra Integration](02-auth.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the Microsoft Entra integration, you'd have to use `--admin` here, which isn't what we want to happen. In a following step, you'll log in with a user that has been added to the Microsoft Entra security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the Microsoft Entra login process to auth the _user of your choice_, which will then be checked against Kubernetes RBAC to perform the action. The user you choose to log in with _must be a member of the Microsoft Entra group bound_ to the `cluster-admin` ClusterRole. For simplicity you could either use the "break-glass" admin user created in [Microsoft Entra Integration](02-auth.md) (`bu0001a0042-admin`) or any user you assigned to the `cluster-admin` group assignment in your [`cluster-rbac.yaml`](cluster-manifests/cluster-rbac.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper Microsoft Entra group-based RBAC access is a critical security function that you should invest time in setting up.
+        > In the [Microsoft Entra Integration](02-auth.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the Microsoft Entra integration, you'd have to use `--admin` here, which isn't what we want to happen. In a following step, you'll log in with a user that has been added to the Microsoft Entra security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the Microsoft Entra login process to auth the *user of your choice*, which will then be checked against Kubernetes RBAC to perform the action. The user you choose to log in with *must be a member of the Microsoft Entra group bound* to the `cluster-admin` ClusterRole. For simplicity you could either use the "break-glass" admin user created in [Microsoft Entra Integration](02-auth.md) (`bu0001a0042-admin`) or any user you assigned to the `cluster-admin` group assignment in your [`cluster-rbac.yaml`](cluster-manifests/cluster-rbac.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper Microsoft Entra group-based RBAC access is a critical security function that you should invest time in setting up.
 
         ```bash
         az aks get-credentials -g rg-bu0001a0042-03 -n $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
@@ -184,18 +184,18 @@ Following the steps below will result in the provisioning of the AKS multi clust
         :warning: At this point two important steps are happening:
 
         - The `az aks get-credentials` command will be fetch a `kubeconfig` containing references to the AKS cluster you have created earlier.
-        - To _actually_ use the cluster you will need to authenticate. For that, run any `kubectl` commands which at this stage will prompt you to authenticate against Microsoft Entra ID. For example, run the following command:
+        - To *actually* use the cluster you will need to authenticate. For that, run any `kubectl` commands which at this stage will prompt you to authenticate against Microsoft Entra ID. For example, run the following command:
 
         ```bash
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
 
-        Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
+        Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
     1. Ensure Flux in region 1 and 2 has created the workload namespaces.
 
-        :bulb: Please notice that both namespaces are Kustomization overlays, and as such they were customized to be annotated with the region number.
+        :bulb: notice that both namespaces are Kustomization overlays, and as such they were customized to be annotated with the region number.
 
         ```bash
         # press Ctrl-C once you receive a successful response

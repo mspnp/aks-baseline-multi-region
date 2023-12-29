@@ -6,10 +6,10 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 
 ## Contents
 
-* Default Namespaces
-* [Kured](#kured)
-* Ingress Network Policy
-* Azure Monitor Prometheus Scraping
+- Default Namespaces
+- [Kured](#kured)
+- Ingress Network Policy
+- Azure Monitor Prometheus Scraping
 
 ### Kured
 

@@ -29,7 +29,7 @@ After you are done exploring your deployed [AKS baseline multi cluster](/README.
 
 1. Delete flow logs
 
-   The `networkWatcherRG` resource group is where flow log definitions were created for this reference implementation.  All of the flow logs that were created were prefixed with `fl` and were followed by a GUID, targeting a virtual network either in the hub or spokes resource group.
+   The `networkWatcherRG` resource group is where flow log definitions were created for this reference implementation. All of the flow logs that were created were prefixed with `fl` and were followed by a GUID, targeting a virtual network either in the hub or spokes resource group.
 
 1. [Remove the Azure Policy assignments](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Compliance) scoped to the cluster's resource group. To identify those created by this implementation, look for ones that are prefixed with `[your-cluster-name] `. Alternatively you could execute the following commmand:
 
