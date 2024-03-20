@@ -1,8 +1,10 @@
 # Prerequisites
 
-This is the starting point for the instructions on deploying the [AKS baseline multi cluster reference implementation](/README.md). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the creation of the AKS clusters.
+This is the starting point for the instructions on deploying the [AKS baseline multicluster reference implementation](/README.md). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the creation of the AKS clusters.
 
 ## Steps
+
+> :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
 
 1. An Azure subscription.
 
@@ -20,13 +22,21 @@ This is the starting point for the instructions on deploying the [AKS baseline m
    > - Microsoft Entra [User Administrator](https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference#user-administrator-permissions) is *required* to create a "break glass" AKS admin Microsoft Entra security group and user. Alternatively, you could get your Microsoft Entra admin to create this for you when instructed to do so.
    >   - If you are not part of the User Administrator group in the tenant associated to your Azure subscription, consider [creating a new tenant](https://learn.microsoft.com/entra/fundamentals/create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation. The Microsoft Entra tenant backing your cluster's API RBAC does NOT need to be the same tenant associated with your Azure subscription.
 
-1. Latest [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) (must be at least 2.37), or you can perform this from Azure Cloud Shell by clicking below.
+1. Latest [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) installed (must be at least 2.37), or you can perform this from Azure Cloud Shell by clicking below.
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
+1. Latest [GitHub CLI](https://github.com/cli/cli/#installation). *OpenSSL is already installed in Azure Cloud Shell.*
 
-1. Login GitHub CLI
+1. Install [Certbot](https://certbot.eff.org/instructions)
+
+   Certbot is a open-source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS. It'll be used to generate a non self-signed TLS cert for your Azure Application Gateway instances, a requirement for Azure Front Door.
+
+1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate the remaining self-signed certs used in this implementation. *OpenSSL is already installed in Azure Cloud Shell.*
+
+   > :warning: Some shells may have the `openssl` command aliased for LibreSSL. LibreSSL will not work with the instructions found here. You can check this by running `openssl version` and you should see output that says `OpenSSL <version>` and not `LibreSSL <version>`.
+
+1. Login with the GitHub CLI
 
    ```bash
    gh auth login -s "repo,admin:org"
@@ -43,17 +53,9 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 1. Get your GitHub username
 
    ```bash
-   export GITHUB_USER_NAME_AKS_MRB=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
-   echo GITHUB_USER_NAME_AKS_MRB: $GITHUB_USER_NAME_AKS_MRB
+   export GITHUB_USERNAME_AKS_MRB=$(gh api user -q '.login')
+   echo GITHUB_USERNAME_AKS_MRB: $GITHUB_USERNAME_AKS_MRB
    ```
-
-1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation. *OpenSSL is already installed in Azure Cloud Shell.*
-
-   > :warning: Some shells may have the `openssl` command aliased for LibreSSL. LibreSSL will not work with the instructions found here. You can check this by running `openssl version` and you should see output that says `OpenSSL <version>` and not `LibreSSL <version>`.
-
-1. Intall [Certbot](https://certbot.eff.org/)
-
-   Certbot is a free, open-source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS. It'll be used to generate a TLS cert for your Azure Application Gateway instances.
 
 ### Save your work in-progress
 

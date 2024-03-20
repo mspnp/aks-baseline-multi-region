@@ -25,7 +25,7 @@ These steps will result the certificates needed for Azure Application Gateway an
    ./certs/letsencrypt-pip-cert-generation.sh $(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGatewayPublicIp.value -o tsv)
    ```
 
-   :bulb: EV certificates are mostly recommended for user-facing endpoints, which is not the case in this multi region reference implementation. The Azure Application Gateways instances are going to be just the regional backend servers for a globally distributed load balancer. For more information on how these certificates are being generated, please refer to [Certificate Generation for an Azure Public IP with your DNS Prefix](https://github.com/mspnp/letsencrypt-pip-cert-generation).
+   :bulb: EV certificates are mostly recommended for user-facing endpoints, which is not the case in this multiregion reference implementation. The Azure Application Gateways instances are going to be just the regional backend servers for a globally distributed load balancer (Azure Front Door). For more information on how these certificates are being generated, please refer to [Certificate Generation for an Azure Public IP with your DNS Prefix](https://github.com/mspnp/letsencrypt-pip-cert-generation).
 
 1. Base64 encode the client-facing certificate.
 

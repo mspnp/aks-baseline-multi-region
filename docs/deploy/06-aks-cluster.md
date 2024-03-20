@@ -1,10 +1,10 @@
-# Deploy the AKS Clusters in two different regions
+# Deploy the AKS clusters in two different regions
 
 Now that you [generated your client-facing and AKS ingress controller TLS certificates](./05-ca-certificates.md), the next step in the [AKS baseline multi cluster reference implementation](/README.md) is deploying the AKS clusters and its adjacent Azure resources.
 
 ## Expected results
 
-Following these steps will result in the provisioning of the AKS multi cluster solution.
+Following these steps will result in the provisioning of the AKS multicluster solution.
 
 | Object                         | Purpose                                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -16,11 +16,11 @@ Following these steps will result in the provisioning of the AKS multi cluster s
 
 > :book: The selected locations are `East US 2` and `Central US` which are Azure paired regions. All in all, the team resolution is to have a single CI/CD pipeline that is aware of the multiple clusters being deployed, and could take measures in case of errors while deploying for a particular region. This pipeline uses a common stamp for the cluster creation with different parameter files per region, and it will be also enrolling the AKS Clusters in GitOps to help with the initial desired state. From there, Flux will take care of the AKS cluster bootstrapping process. In this case, the app team decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application. They know that every change in their cluster stamp or workflow will probably affect all clusters. But there are some special cases they want to contemplate like adding a new cluster to their fleet. For those scenarios, they are tagging the pipeline execution to exclude and remain them untouched from that particular execution.
 
-![The AKS Clusters deployment diagram depicting the proposed cluster fleet topology running from different regions.](./images/aks-cluster-mgmnt.png)
+![The AKS clusters deployment diagram depicting the proposed cluster fleet topology running from different regions.](./images/aks-cluster-mgmnt.png)
 
-> :bulb: Multi Cluster and Federation's repos could be a monorepo or multiple repos as displayed from the digram above. In this reference implementation, the workload manifests, and ARM templates are shipped together from a single repo.
+> :bulb: The multicluster and bootstrapping repos could be a monorepo or multiple repos as displayed from the diagram above. In this reference implementation, the workload manifests, and ARM templates are shipped together from a single repo.
 
-> :bulb: Another interesting use case that this architecture could help with is when AKS introduces *preview features* in the same or different regions. They could in some case be a breaking in an upcoming major releases like happened with `containerd` as the new default runtime. In those situtations, you might want to do some A/B testing without fully disrupting your live and stable AKS cluster.
+> :bulb: Another interesting use case that this architecture could help with is when AKS introduces *preview features* in the same or different regions. They could in some case be a breaking in an upcoming major releases like happened with the switch to containerd as the default runtime. In those situations, you might want to do some A/B testing without fully disrupting your live and stable AKS cluster.
 
 1. Obtain shared services resource details
 
@@ -36,7 +36,7 @@ Following these steps will result in the provisioning of the AKS multi cluster s
 1. Upload images to your Azure Container Registry that are referenced bootstrapping.
 
     ```bash
-    az acr import --source docker.io/weaveworks/kured:1.14.0 -n $ACR_NAME_AKS_MRB --force
+    az acr import --source ghcr.io/kubereboot/kured:1.14.0 -n $ACR_NAME_AKS_MRB --force
     az acr import --source docker.io/library/traefik:v2.10.4 -n $ACR_NAME_AKS_MRB --force
     ```
 
@@ -59,37 +59,38 @@ Following these steps will result in the provisioning of the AKS multi cluster s
         echo GITHUB_FEDERATED_IDENTITY_PRINCIPALID: $GITHUB_FEDERATED_IDENTITY_PRINCIPALID
 
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
-        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'Contributor'
+        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'Contributor' --scope "/subscriptions/$(az account show --query 'id' -o tsv)"
 
         # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (such as AKS-managed Internal Load Balancer, Azure Container Registry, Managed Identities, etc.)
-        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'User Access Administrator'
+        az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'User Access Administrator' --scope "/subscriptions/$(az account show --query 'id' -o tsv)"
+
         ```
 
     1. Create federated identity secrets in your GitHub repository.
 
         ```bash
-        export GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
+        GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
         echo GITHUB_FEDERATED_IDENTITY_CLIENTID: $GITHUB_FEDERATED_IDENTITY_CLIENTID
 
-        export SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+        SUBSCRIPTION_ID=$(az account show --query id -o tsv)
         echo SUBSCRIPTION_ID: $SUBSCRIPTION_ID
 
-        gh secret set AZURE_CLIENT_ID -b"${GITHUB_FEDERATED_IDENTITY_CLIENTID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
-        gh secret set AZURE_TENANT_ID -b"${TENANTID_AZURERBAC_AKS_MRB}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
-        gh secret set AZURE_SUBSCRIPTION_ID  -b"${SUBSCRIPTION_ID}"  --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set AZURE_CLIENT_ID -b"${GITHUB_FEDERATED_IDENTITY_CLIENTID}" -a actions --repo $GITHUB_USERNAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set AZURE_TENANT_ID -b"${TENANTID_AZURERBAC_AKS_MRB}" -a actions --repo $GITHUB_USERNAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set AZURE_SUBSCRIPTION_ID  -b"${SUBSCRIPTION_ID}" -a actions --repo $GITHUB_USERNAME_AKS_MRB/aks-baseline-multi-region
         ```
 
     1. Create `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64` secret in your GitHub repository.
 
         ```bash
-        gh secret set APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB}" --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
-        gh secret set APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB}" --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64 -b"${APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64_AKS_MRB}" -a actions --repo $GITHUB_USERNAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64 -b"${APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64_AKS_MRB}" -a actions --repo $GITHUB_USERNAME_AKS_MRB/aks-baseline-multi-region
         ```
 
     1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository.
 
         ```bash
-        gh secret set AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 -b"${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB}" --repo $GITHUB_USER_NAME_AKS_MRB/aks-baseline-multi-region
+        gh secret set AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 -b"${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_MRB}" -a actions --repo $GITHUB_USERNAME_AKS_MRB/aks-baseline-multi-region
         ```
 
     1. Copy the GitHub workflow file into the expected directory.
@@ -111,7 +112,7 @@ Following these steps will result in the provisioning of the AKS multi cluster s
         echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB && \
         echo LOGANALYTICSWORKSPACEID: $LOGANALYTICSWORKSPACEID && \
         echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID && \
-        echo GITHUB_USER_NAME_AKS_MRB: $GITHUB_USER_NAME_AKS_MRB
+        echo GITHUB_USERNAME_AKS_MRB: $GITHUB_USERNAME_AKS_MRB
         ```
 
         Update each region's cluster parameter file:
@@ -123,7 +124,7 @@ Following these steps will result in the provisioning of the AKS multi cluster s
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json && \
-        sed -i "s#<your-github-org>#${GITHUB_USER_NAME_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json
+        sed -i "s#<your-github-org>#${GITHUB_USERNAME_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
         sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
@@ -131,7 +132,7 @@ Following these steps will result in the provisioning of the AKS multi cluster s
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.centralus.json && \
-        sed -i "s#<your-github-org>#${GITHUB_USER_NAME_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
+        sed -i "s#<your-github-org>#${GITHUB_USERNAME_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
         ```
 
     1. Customize your GitOps manifests to pull images from your private Azure Container Registry.
