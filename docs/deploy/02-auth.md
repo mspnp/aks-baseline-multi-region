@@ -27,15 +27,13 @@ This does not configure anything related to workload identity. This configuratio
    TENANTS=$(az rest --method get --url https://management.azure.com/tenants?api-version=2020-01-01 --query 'value[].{TenantId:tenantId,Name:displayName}' -o table)
    ```
 
-   > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
-
 1. Validate your saved Azure subscription's tenant ID is correct
 
    ```bash
    echo "${TENANTS}" | grep -z ${TENANTID_AZURERBAC_AKS_MRB}
    ```
 
-   :warning: Do not procced if the tenant highlighted in red is not correct. Start over by `az login` into the proper Azure subscription.
+   :warning: Do not proceed if the tenant highlighted in red is not correct. Start over by `az login` into the proper Azure subscription.
 
 1. From the list printed in the previous step, select a Microsoft Entra tenant to associate your Kubernetes RBAC Cluster API authentication and login into.
 
@@ -55,12 +53,12 @@ This does not configure anything related to workload identity. This configuratio
 
    :warning: If the tenant highlighted in red is not correct, start over by login into the proper Microsoft Entra ID tenant for Kubernetes cluster API authorization.
 
-1. Create a single "break-glass" cluster administrator user for your AKS clusters, and add to both cluster admin security groups being created that are going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
+1. Create a single "break-glass" cluster administrator user for your AKS clusters, and add to both cluster admin security groups being created. That group will map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
-   :book: The app team requested a single admin user that needs to have access in both clusters. The Microsoft Entra Admin team create two different groups, one per cluster to home the new admin.
+   :book: The app team requested a single admin user that needs to have access in both clusters. The Microsoft Entra Admin team creates two different groups, one per cluster to home the new admin.
 
    ```bash
-   # create a single admin for both clusters
+   # Create a single admin for both clusters
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
    OBJECTNAME_USER_CLUSTERADMIN=bu0001a0042-admin
    OBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${OBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${OBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0042AdminChangeMe --query id -o tsv)
@@ -68,7 +66,7 @@ This does not configure anything related to workload identity. This configuratio
    echo OBJECTNAME_USER_CLUSTERADMIN: $OBJECTNAME_USER_CLUSTERADMIN
    echo OBJECTID_USER_CLUSTERADMIN: $OBJECTID_USER_CLUSTERADMIN
 
-   # create the admin groups
+   # Create the admin groups
    OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203=cluster-admins-bu0001a0042-03
    OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004204=cluster-admins-bu0001a0042-04
    export OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB=$(az ad group create --display-name $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --mail-nickname $OBJECTNAME_GROUP_CLUSTERADMIN_BU0001A004203 --description "Principals in this group are cluster admins in the bu0001a004203 cluster." --query id -o tsv)
@@ -78,12 +76,12 @@ This does not configure anything related to workload identity. This configuratio
    echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB
    echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB
 
-   # assign the admin as new member in both groups
+   # Assign the admin as new member in both groups
    az ad group member add -g $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB --member-id $OBJECTID_USER_CLUSTERADMIN
    az ad group member add -g $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB --member-id $OBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, refer to the [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-microsoft-entra-id.md#kubernetes-rbac-backing-store).
+   :bulb: For a better security segregation your organization might require you to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role Bindings in Kubernetes. For more information, refer to the [AKS baseline](https://github.com/mspnp/aks-baseline/blob/main/03-microsoft-entra-id.md#kubernetes-rbac-backing-store).
 
 ### Save your work in-progress
 

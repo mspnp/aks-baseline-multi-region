@@ -1,10 +1,10 @@
-# Deploy the Hub-Spoke Network Topology
+# Deploy the hub-spoke network topology
 
 In the prior step, you've set up a Microsoft Entra tenant to fullfil your [deployed share resources](./03-cluster-prerequisites.md) needs for this reference implementation deployment. Now we will start with the network resources.
 
 ## Subscription and resource group topology
 
-This reference implementation is split across several resource groups in a single subscription. This is to replicate the fact that many organizations will split certain responsibilities into specialized subscriptions (such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology (such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/decision-guides/subscriptions/).) This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
+This reference implementation is split across several resource groups in a single subscription. This is to replicate the fact that many organizations will split certain responsibilities into specialized subscriptions (such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology (such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-subscriptions).) This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
 
 ## Expected results
 
@@ -46,7 +46,7 @@ The following two resource groups will be created and populated with networking 
    >
    > Note: The subnets for Azure Bastion and cross-premises connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
-   The Azure Firewall Base Policies for the Contoso organization were created by the networking team as another shared resource. This way, they became available for each regional cluster that requires inherit them and create children Azure Firewall Policy rules on top of. An important Azure Resource Manager requirement at the time writing this is that all derivates Azure Firewall Policies must reside on the same parent's location.
+   The Azure Firewall Base Policies for the Contoso organization were created by the networking team as another shared resource. This way, they became available for each regional cluster that requires inherit them and create children Azure Firewall Policy rules on top of. An important Azure Resource Manager requirement at the time writing this is that all derivative Azure Firewall Policies must reside on the same parent's location.
 
    ```bash
    # [Creating the generic hubs takes about ten minutes to run (each).]
