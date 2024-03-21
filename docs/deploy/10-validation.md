@@ -23,7 +23,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Front Door FQDN
-   FRONTDOOR_FQDN=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
+   FRONTDOOR_FQDN=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
    echo FRONTDOOR_FQDN: $FRONTDOOR_FQDN
    ```
 
@@ -87,7 +87,7 @@ See the centralized logs associated to each cluster, which are captured in `Cont
 
 ### Steps
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-shared`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-shared-\<region>`).
 1. Select your Log Analytic Workspace resource.
 1. Navigate under General and click Logs. Then execute the following query
 

@@ -25,9 +25,9 @@ Following these steps will result in the provisioning of the AKS multicluster so
 1. Obtain shared services resource details
 
     ```bash
-    LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
-    CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
-    export ACR_NAME_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+    LOGANALYTICSWORKSPACEID=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
+    CONTAINERREGISTRYID=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
+    export ACR_NAME_AKS_MRB=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
     echo LOGANALYTICSWORKSPACEID: $LOGANALYTICSWORKSPACEID
     echo CONTAINERREGISTRYID: $CONTAINERREGISTRYID
     echo ACR_NAME_AKS_MRB: $ACR_NAME_AKS_MRB
@@ -55,7 +55,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         ```bash
         # Get the managed identity to assign necessary deployment permissions
-        GITHUB_FEDERATED_IDENTITY_PRINCIPALID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityPrincipalId.value' -o tsv)
+        GITHUB_FEDERATED_IDENTITY_PRINCIPALID=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityPrincipalId.value' -o tsv)
         echo GITHUB_FEDERATED_IDENTITY_PRINCIPALID: $GITHUB_FEDERATED_IDENTITY_PRINCIPALID
 
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
@@ -69,7 +69,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
     1. Create federated identity secrets in your GitHub repository.
 
         ```bash
-        GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
+        GITHUB_FEDERATED_IDENTITY_CLIENTID=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityClientId.value' -o tsv)
         echo GITHUB_FEDERATED_IDENTITY_CLIENTID: $GITHUB_FEDERATED_IDENTITY_CLIENTID
 
         SUBSCRIPTION_ID=$(az account show --query id -o tsv)
@@ -97,7 +97,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         ```bash
         mkdir -p .github/workflows
-        cat github-workflow/aks-deploy.yaml > .github/workflows/aks-deploy.yaml
+        sed "s/##SHARED_RESOURCE_GROUP_NAME_AKS_MRB##/${SHARED_RESOURCE_GROUP_NAME_AKS_MRB}/g" github-workflow/aks-deploy.yaml > .github/workflows/aks-deploy.yaml
         ```
 
     1. Generate cluster parameter file per region.

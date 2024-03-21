@@ -50,7 +50,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [Creating the generic hubs takes about ten minutes to run (each).]
-   BASE_FIREWALL_POLICIES_ID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.baseFirewallPoliciesId.value -o tsv)
+   BASE_FIREWALL_POLICIES_ID=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.baseFirewallPoliciesId.value -o tsv)
    echo BASE_FIREWALL_POLICIES_ID: $BASE_FIREWALL_POLICIES_ID
 
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionA -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.eastus2.json
