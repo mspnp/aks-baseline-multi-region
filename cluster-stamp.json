@@ -952,6 +952,10 @@
                     "skip-nodes-with-local-storage": "true",
                     "skip-nodes-with-system-pods": "true"
                 },
+                "autoUpgradeProfile": {
+                  "nodeOSUpgradeChannel": "NodeImage",
+                  "upgradeChannel": "none"
+                },
                 "apiServerAccessProfile": {
                     "authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
                     "enablePrivateCluster": false
