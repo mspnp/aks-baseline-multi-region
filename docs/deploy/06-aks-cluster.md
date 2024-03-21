@@ -36,7 +36,6 @@ Following these steps will result in the provisioning of the AKS multicluster so
 1. Upload images to your Azure Container Registry that are referenced bootstrapping.
 
     ```bash
-    az acr import --source ghcr.io/kubereboot/kured:1.15.0 -n $ACR_NAME_AKS_MRB --force
     az acr import --source docker.io/library/traefik:v2.11 -n $ACR_NAME_AKS_MRB --force
     ```
 
@@ -170,7 +169,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
        ```bash
        sudo az aks install-cli
-       kubectl version --client 
+       kubectl version --client
        ```
 
     1. Get AKS `kubectl` credentials.
