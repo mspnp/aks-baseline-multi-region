@@ -89,7 +89,7 @@ Following these steps will result in the provisioning of the shared Azure resour
 
    ```bash
    # [This takes about two minutes.]
-   az deployment group create -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -f shared-svcs-stamp.json -p location=eastus2 gitHubAccountName=$GITHUB_USERNAME_AKS_MRB
+   az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2 gitHubAccountName=$GITHUB_USERNAME_AKS_MRB
    ```
 
 ### Next step
