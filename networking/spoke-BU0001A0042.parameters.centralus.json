@@ -14,7 +14,7 @@
         "clusterNodesSubnetAddressPrefix": {
             "value": "10.244.0.0/22"
         },
-        "clusterIngressServicesSubnetAdressPrefix": {
+        "clusterIngressServicesSubnetAddressPrefix": {
             "value": "10.244.4.0/28"
         },
         "applicationGatewaySubnetAddressPrefix": {

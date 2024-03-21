@@ -55,7 +55,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         ```bash
         # Get the managed identity to assign necessary deployment permissions
-        export GITHUB_FEDERATED_IDENTITY_PRINCIPALID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityPrincipalId.value' -o tsv)
+        GITHUB_FEDERATED_IDENTITY_PRINCIPALID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query 'properties.outputs.githubFederatedIdentityPrincipalId.value' -o tsv)
         echo GITHUB_FEDERATED_IDENTITY_PRINCIPALID: $GITHUB_FEDERATED_IDENTITY_PRINCIPALID
 
         # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level

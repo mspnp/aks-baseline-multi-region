@@ -93,7 +93,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.27.3",
+            "defaultValue": "1.27.9",
             "type": "string"
         },
         "gitOpsBootstrappingRepoHttpsUrl": {
@@ -812,7 +812,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2022-03-02-preview",
+            "apiVersion": "2023-04-01",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "tags": {
@@ -857,7 +857,8 @@
                         ],
                         "upgradeSettings": {
                             "maxSurge": "33%"
-                        }
+                        },
+                        "enableFIPS": false
                     },
                     {
                         "name": "npuser01",
@@ -884,7 +885,8 @@
                         ],
                         "upgradeSettings": {
                             "maxSurge": "33%"
-                        }
+                        },
+                        "enableFIPS": false
                     }
                 ],
                 "servicePrincipalProfile": {
@@ -923,12 +925,14 @@
                 "networkProfile": {
                     "networkPlugin": "azure",
                     "networkPolicy": "azure",
+                    "networkDataplane": "azure",
                     "outboundType": "userDefinedRouting",
                     "loadBalancerSku": "standard",
-                    "loadBalancerProfile": "[json('null')]",
+                    "loadBalancerProfile": {
+                        "backendPoolType": "nodeIPConfiguration"
+                    },
                     "serviceCidr": "172.16.0.0/16",
-                    "dnsServiceIP": "172.16.0.10",
-                    "dockerBridgeCidr": "172.18.0.1/16"
+                    "dnsServiceIP": "172.16.0.10"
                 },
                 "aadProfile": {
                     "managed": true,
@@ -936,6 +940,7 @@
                     "adminGroupObjectIDs": [
                         "[parameters('clusterAdminEntraGroupObjectId')]"
                     ],
+                    "adminUsers": null,
                     "tenantID": "[parameters('k8sControlPlaneAuthorizationTenantId')]"
                 },
                 "autoScalerProfile": {
@@ -966,10 +971,20 @@
                 },
                 "disableLocalAccounts:": true,
                 "securityProfile": {
-                    "workloadIdentity": {
-                        "enabled": true
+                    "defender": {
+                        "securityMonitoring": {
+                            "enabled": false
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "diskCSIDriver": {
+                        "enabled": false
                     },
-                    "azureDefender": {
+                    "fileCSIDriver": {
+                        "enabled": false
+                    },
+                    "snapshotController": {
                         "enabled": false
                     }
                 },
@@ -985,8 +1000,8 @@
                 }
             },
             "sku": {
-                "name": "Basic",
-                "tier": "Paid"
+                "name": "Base",
+                "tier": "Standard"
             },
             "resources": [
                 {

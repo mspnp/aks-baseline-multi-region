@@ -24,7 +24,7 @@
                 "description": "The AKS cluster nodes subnet address prefix. This prefix belongs to the address space passed as part of the clusterVNetAddressPrefix parameter value"
             }
         },
-        "clusterIngressServicesSubnetAdressPrefix": {
+        "clusterIngressServicesSubnetAddressPrefix": {
             "type": "string",
             "metadata": {
                 "description": "The AKS cluster ingress services subnet address prefix. This prefix belongs to the address space passed as part of the clusterVNetAddressPrefix parameter value"
@@ -316,7 +316,7 @@
                     {
                         "name": "snet-clusteringressservices",
                         "properties": {
-                            "addressPrefix": "[parameters('clusterIngressServicesSubnetAdressPrefix')]",
+                            "addressPrefix": "[parameters('clusterIngressServicesSubnetAddressPrefix')]",
                             "routeTable": {
                                 "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
                             },
