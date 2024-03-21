@@ -94,6 +94,7 @@ Following these steps will result in the provisioning of the shared Azure resour
    ```bash
    # [This takes about two minutes.]
    az deployment group create -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -f shared-svcs-stamp.bicep -p gitHubAccountName=$GITHUB_USERNAME_AKS_MRB
+
    ```
 
 ### Save your work in-progress
