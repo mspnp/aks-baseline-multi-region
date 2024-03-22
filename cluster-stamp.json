@@ -1044,6 +1044,24 @@
             ]
         },
         {
+          "type": "Microsoft.ContainerService/managedClusters/maintenanceConfigurations",
+          "apiVersion": "2024-01-02-preview",
+          "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+          "name": "aksManagedNodeOSUpgradeSchedule",
+          "properties": {
+            "maintenanceWindow": {
+              "durationHours": 12,
+              "schedule": {
+                "weekly": {
+                  "dayOfWeek": "Tuesday",
+                  "intervalWeeks": 1
+                }
+              },
+              "startTime": "21:00"
+            }
+          }
+        },
+        {
             "type": "Microsoft.KubernetesConfiguration/extensions",
             "apiVersion": "2021-09-01",
             "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
