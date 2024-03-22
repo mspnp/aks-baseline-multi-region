@@ -165,6 +165,19 @@ Following these steps will result in the provisioning of the AKS multicluster so
         echo AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB: $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
 
+    1. Validate there are no available image upgrades. As AKS cluster in region 1 and 2 were recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
+
+       ```bash
+       az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -g rg-bu0001a0042-03 && \
+       az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -g rg-bu0001a0042-03 --query nodeImageVersion && \
+       az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -g rg-bu0001a0042-04 && \
+       az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -g rg-bu0001a0042-04 --query nodeImageVersion
+       ```
+
+       > Typically, base node images don't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
+
+       > Node images in region 1 and 2 could defer if recent shipped images didn't arrive to a particular region. Consider as part of day2 activities monitoring the release status by regions at [AKS-Release-Tracker](https://releases.aks.azure.com/). eleases can take up to two weeks to roll out to all regions from the initial time of shipping due to Azure Safe Deployment Practices (SDP). If your AKS node images in region 1 and 2 must be on the same verion you should consider update the node images manually.
+
     1. Install kubectl 1.28 or newer. (kubectl supports ±1 Kubernetes version.)
 
        ```bash
