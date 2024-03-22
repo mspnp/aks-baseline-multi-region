@@ -13,9 +13,9 @@ After you are done exploring your deployed [AKS baseline multi cluster](/README.
    ```bash
    az group delete -n rg-bu0001a0042-03
    az group delete -n rg-bu0001a0042-04
-   az group delete -n rg-bu0001a0042-shared
    az group delete -n rg-enterprise-networking-spokes
    az group delete -n rg-enterprise-networking-hubs
+   az group delete -n $SHARED_RESOURCE_GROUP_NAME_AKS_MRB
    ```
 
 1. Purge Azure Key Vault

@@ -43,8 +43,12 @@ Following these steps will result in the provisioning of the shared Azure resour
    > They create a new resource group to contain all shared infrastructure resources.
 
    ```bash
+   # The location you select here will be the location for all shared resources
+   SHARED_RESOURCES_LOCATION=eastus2
+   export SHARED_RESOURCE_GROUP_NAME_AKS_MRB="rg-bu0001a0042-shared-${SHARED_RESOURCES_LOCATION}"
+   
    # [This takes less than one minute.]
-   az group create --name rg-bu0001a0042-shared --location eastus2
+   az group create --name $SHARED_RESOURCE_GROUP_NAME_AKS_MRB --location $SHARED_RESOURCES_LOCATION
    ```
 
 1. Deploy the AKS cluster prerequisites and shared services.
@@ -89,8 +93,18 @@ Following these steps will result in the provisioning of the shared Azure resour
 
    ```bash
    # [This takes about two minutes.]
-   az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2 gitHubAccountName=$GITHUB_USERNAME_AKS_MRB
+   az deployment group create -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -f shared-svcs-stamp.bicep -p gitHubAccountName=$GITHUB_USERNAME_AKS_MRB
    ```
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 
