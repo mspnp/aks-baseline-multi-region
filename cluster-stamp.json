@@ -93,7 +93,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.27.9",
+            "defaultValue": "1.29",
             "type": "string"
         },
         "gitOpsBootstrappingRepoHttpsUrl": {
@@ -121,36 +121,26 @@
     "variables": {
         "orgAppId": "BU0001A0042",
         "appId": "[concat(variables('orgAppId'),'-', parameters('appInstanceId'))]",
-
         "networkContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
         "acrPullRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
         "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
         "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
-
         "nodeResourceGroupName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
-
         "containerRegistryName": "[split(parameters('containerRegistryId'),'/')[8]]",
-
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
         "clusterIdentityDeploymentName": "[concat('EnsureClusterIdentityHasRbacToSelfManagedRes-', variables('clusterName'))]",
         "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-ingressservices')]",
-
         "agwName": "[concat('apw-', variables('clusterName'))]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
-
         "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
         "acrPrivateDnsZonesName": "privatelink.azurecr.io",
-
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
-
         "keyVaultName": "[concat('kv-', variables('clusterName'))]",
-
         "policyResourceIdAKSLinuxRestrictive": "/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00",
         "policyResourceIdEnforceHttpsIngress": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
         "policyResourceIdEnforceInternalLoadBalancers": "/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e",
@@ -560,8 +550,7 @@
                             "unhealthyThreshold": 3,
                             "pickHostNameFromBackendHttpSettings": true,
                             "minServers": 0,
-                            "match": {
-                            }
+                            "match": {}
                         }
                     }
                 ],
@@ -612,8 +601,7 @@
                                 "id": "[concat(variables('apwResourceId'), '/sslCertificates/', variables('agwName'), '-ssl-certificate')]"
                             },
                             "hostName": "[concat(reference(resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',concat('pip-',variables('appId'))),'2020-07-01','Full').properties.dnsSettings.domainNameLabel,'.', parameters('location'),'.cloudapp.azure.com')]",
-                            "hostNames": [
-                            ],
+                            "hostNames": [],
                             "requireServerNameIndication": true
                         }
                     }
@@ -839,6 +827,7 @@
                         "osDiskSizeGB": 80,
                         "osDiskType": "Ephemeral",
                         "osType": "Linux",
+                        "osSku": "AzureLinux",
                         "minCount": 3,
                         "maxCount": 4,
                         "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
@@ -867,6 +856,7 @@
                         "osDiskSizeGB": 120,
                         "osDiskType": "Ephemeral",
                         "osType": "Linux",
+                        "osSku": "AzureLinux",
                         "minCount": 2,
                         "maxCount": 5,
                         "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
@@ -1105,7 +1095,7 @@
                     "localAuthRef": "[json('null')]"
                 },
                 "kustomizations": {
-                    "unifed" : {
+                    "unifed": {
                         "path": "[concat('./cluster-manifests/', parameters('gitOpsBootstrappingRepoDirectoryName'))]",
                         "dependsOn": [],
                         "timeoutInSeconds": 300,
@@ -1878,4 +1868,3 @@
         }
     }
 }
-

@@ -36,8 +36,8 @@ Following these steps will result in the provisioning of the AKS multicluster so
 1. Upload images to your Azure Container Registry that are referenced bootstrapping.
 
     ```bash
-    az acr import --source ghcr.io/kubereboot/kured:1.14.0 -n $ACR_NAME_AKS_MRB --force
-    az acr import --source docker.io/library/traefik:v2.10.4 -n $ACR_NAME_AKS_MRB --force
+    az acr import --source ghcr.io/kubereboot/kured:1.15.0 -n $ACR_NAME_AKS_MRB --force
+    az acr import --source docker.io/library/traefik:v2.11 -n $ACR_NAME_AKS_MRB --force
     ```
 
 1. Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
@@ -166,7 +166,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
         echo AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB: $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
 
-    1. Install kubectl 1.24 or newer. (kubectl supports ±1 Kubernetes version.)
+    1. Install kubectl 1.28 or newer. (kubectl supports ±1 Kubernetes version.)
 
        ```bash
        sudo az aks install-cli
