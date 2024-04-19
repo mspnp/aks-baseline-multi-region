@@ -134,26 +134,26 @@ Following these steps will result in the provisioning of the AKS multicluster so
         sed -i "s#<your-github-org>#${GITHUB_USERNAME_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
         ```
 
-    1. Customize your GitOps manifests to pull images from your private Azure Container Registry.
-
-        ```bash
-        find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME_AKS_MRB}/" {} +
-        ```
-
     1. The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
 
         > :book: The app team monitors the workflow execution as this is affecting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
-        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize manifests and setup GitHub CD workflow" && git push origin main
+        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize params and setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/using-workflows/creating-starter-workflows-for-your-organization).
 
+    1. Select your default repo by choosing your forked repository
+
+       ```bash
+       gh repo set-default
+       ```
+
     1. You can continue only after the GitHub Workflow completes successfully.
 
         ```bash
-        until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ $GH_WF_STATUS == "completed"]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
+        until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ ${GH_WF_STATUS} == "completed" ]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
         ```
 
     1. Get the cluster names for regions 1 and 2.
