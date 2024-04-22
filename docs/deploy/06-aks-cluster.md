@@ -176,7 +176,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
        > Typically, base node images don't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
 
-       > Node images in region 1 and 2 could defer if recent shipped images didn't arrive to a particular region. Consider as part of day2 activities monitoring the release status by regions at [AKS-Release-Tracker](https://releases.aks.azure.com/). eleases can take up to two weeks to roll out to all regions from the initial time of shipping due to Azure Safe Deployment Practices (SDP). If your AKS node images in region 1 and 2 must be on the same verion you should consider update the node images manually.
+       > Node images in regions 1 and 2 could differ if recently shipped images didn't arrive in a particular region. As part of day2 activities, consider monitoring the release status by region at [AKS-Release-Tracker](https://releases.aks.azure.com/). Releases can take up to two weeks to roll out to all regions from the initial time of shipping due to Azure Safe Deployment Practices (SDP). If your AKS node images in regions 1 and 2 are required to be on the same version you should consider updating the node images manually.
 
     1. Install kubectl 1.28 or newer. (kubectl supports ±1 Kubernetes version.)
 
