@@ -184,7 +184,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
        sudo az aks install-cli
        kubectl version --client
        ```
-
+       > Note: if you have created a
     1. Get AKS `kubectl` credentials.
 
         > In the [Microsoft Entra Integration](02-auth.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the Microsoft Entra integration, you'd have to use `--admin` here, which isn't what we want to happen. In a following step, you'll log in with a user that has been added to the Microsoft Entra security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the Microsoft Entra login process to auth the *user of your choice*, which will then be checked against Kubernetes RBAC to perform the action. The user you choose to log in with *must be a member of the Microsoft Entra group bound* to the `cluster-admin` ClusterRole. For simplicity you could either use the "break-glass" admin user created in [Microsoft Entra Integration](02-auth.md) (`bu0001a0042-admin`) or any user you assigned to the `cluster-admin` group assignment in your [`cluster-rbac.yaml`](cluster-manifests/cluster-rbac.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper Microsoft Entra group-based RBAC access is a critical security function that you should invest time in setting up.
@@ -196,22 +196,13 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         :warning: the `az aks get-credentials` command will be fetch a `kubeconfig` containing references to the AKS cluster you have created earlier.
 
-    1. Authenticate with the previously created "break-glass" cluster administrator user for your AKS clusters (first time only the password is: `ChangeMebu0001a0042AdminChangeMe`).
-
-       ```bash
-       az login -t <Replace-With-ClusterApi-AzureAD-TenantId> --allow-no-subscriptions
-       ```
-
-       Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
-
-       :warning:  Since the cluster is now on 1.24v or later, kubelogin is required. To *actually* use the cluster you will need to authenticate first using azcli.
-
     1. Run any `kubectl` commands which at this stage is already authenticated against Microsoft Entra ID. For example, run the following command:
 
         ```bash
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
+        Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
     1. Ensure Flux in region 1 and 2 has created the workload namespaces.
 
