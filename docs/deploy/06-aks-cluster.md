@@ -36,7 +36,6 @@ Following these steps will result in the provisioning of the AKS multicluster so
 1. Upload images to your Azure Container Registry that are referenced bootstrapping.
 
     ```bash
-    az acr import --source ghcr.io/kubereboot/kured:1.15.0 -n $ACR_NAME_AKS_MRB --force
     az acr import --source docker.io/library/traefik:v2.11 -n $ACR_NAME_AKS_MRB --force
     ```
 
@@ -135,26 +134,26 @@ Following these steps will result in the provisioning of the AKS multicluster so
         sed -i "s#<your-github-org>#${GITHUB_USERNAME_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json
         ```
 
-    1. Customize your GitOps manifests to pull images from your private Azure Container Registry.
-
-        ```bash
-        find . -type f -name "kustomization.yaml" -exec sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME_AKS_MRB}/" {} +
-        ```
-
     1. The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
 
         > :book: The app team monitors the workflow execution as this is affecting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
-        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize manifests and setup GitHub CD workflow" && git push origin main
+        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "Customize params and setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/using-workflows/creating-starter-workflows-for-your-organization).
 
+    1. Select your default repo by choosing your forked repository
+
+       ```bash
+       gh repo set-default
+       ```
+
     1. You can continue only after the GitHub Workflow completes successfully.
 
         ```bash
-        until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ $GH_WF_STATUS == "completed"]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
+        until export GH_WF_STATUS=$(gh api /repos/:owner/:repo/actions/runs/$(gh api /repos/:owner/:repo/actions/runs -q ".workflow_runs[0].id") -q ".status" 2> /dev/null) && [[ ${GH_WF_STATUS} == "completed" ]]; do echo "Monitoring GitHub workflow execution: ${GH_WF_STATUS}" && sleep 20; done
         ```
 
     1. Get the cluster names for regions 1 and 2.
@@ -166,32 +165,43 @@ Following these steps will result in the provisioning of the AKS multicluster so
         echo AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB: $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
 
+    1. Validate there are no available image upgrades. As AKS cluster in region 1 and 2 were recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
+
+       ```bash
+       az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -g rg-bu0001a0042-03 && \
+       az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB -g rg-bu0001a0042-03 --query nodeImageVersion && \
+       az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -g rg-bu0001a0042-04 && \
+       az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB -g rg-bu0001a0042-04 --query nodeImageVersion
+       ```
+
+       > Typically, base node images don't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
+
+       > Node images in regions 1 and 2 could differ if recently shipped images didn't arrive in a particular region. As part of day2 activities, consider monitoring the release status by region at [AKS-Release-Tracker](https://releases.aks.azure.com/). Releases can take up to two weeks to roll out to all regions from the initial time of shipping due to Azure Safe Deployment Practices (SDP). If your AKS node images in regions 1 and 2 are required to be on the same version you should consider updating the node images manually.
+
     1. Install kubectl 1.28 or newer. (kubectl supports ±1 Kubernetes version.)
 
        ```bash
        sudo az aks install-cli
-       kubectl version --client 
+       kubectl version --client
        ```
-
+       > Note: if you have created a
     1. Get AKS `kubectl` credentials.
 
         > In the [Microsoft Entra Integration](02-auth.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the Microsoft Entra integration, you'd have to use `--admin` here, which isn't what we want to happen. In a following step, you'll log in with a user that has been added to the Microsoft Entra security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the Microsoft Entra login process to auth the *user of your choice*, which will then be checked against Kubernetes RBAC to perform the action. The user you choose to log in with *must be a member of the Microsoft Entra group bound* to the `cluster-admin` ClusterRole. For simplicity you could either use the "break-glass" admin user created in [Microsoft Entra Integration](02-auth.md) (`bu0001a0042-admin`) or any user you assigned to the `cluster-admin` group assignment in your [`cluster-rbac.yaml`](cluster-manifests/cluster-rbac.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper Microsoft Entra group-based RBAC access is a critical security function that you should invest time in setting up.
 
         ```bash
-        az aks get-credentials -g rg-bu0001a0042-03 -n $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
-        az aks get-credentials -g rg-bu0001a0042-04 -n $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
+        az aks get-credentials -g rg-bu0001a0042-03 -n $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MR --format azure
+        az aks get-credentials -g rg-bu0001a0042-04 -n $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MR --format azure
         ```
 
-        :warning: At this point two important steps are happening:
+        :warning: the `az aks get-credentials` command will be fetch a `kubeconfig` containing references to the AKS cluster you have created earlier.
 
-        - The `az aks get-credentials` command will be fetch a `kubeconfig` containing references to the AKS cluster you have created earlier.
-        - To *actually* use the cluster you will need to authenticate. For that, run any `kubectl` commands which at this stage will prompt you to authenticate against Microsoft Entra ID. For example, run the following command:
+    1. Run any `kubectl` commands which at this stage is already authenticated against Microsoft Entra ID. For example, run the following command:
 
         ```bash
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_03_AKS_MRB
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
         ```
-
         Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
     1. Ensure Flux in region 1 and 2 has created the workload namespaces.

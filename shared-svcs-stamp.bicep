@@ -118,16 +118,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
     }
   }
 
-  resource nodeRebootRequested 'savedSearches@2020-08-01' = {
-    name: 'NodeRebootRequested'
-    properties: {
-      eTag: '*'
-      category: 'Prometheus'
-      displayName: 'Nodes reboot required by kured'
-      query: 'InsightsMetrics | where Namespace == "prometheus" and Name == "kured_reboot_required" | where Val > 0'
-      version: 1
-    }
-  }
 }
 
 @description('Container Insights solution for our log sink.')

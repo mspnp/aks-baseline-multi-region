@@ -952,6 +952,10 @@
                     "skip-nodes-with-local-storage": "true",
                     "skip-nodes-with-system-pods": "true"
                 },
+                "autoUpgradeProfile": {
+                  "nodeOSUpgradeChannel": "NodeImage",
+                  "upgradeChannel": "none"
+                },
                 "apiServerAccessProfile": {
                     "authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
                     "enablePrivateCluster": false
@@ -1038,6 +1042,26 @@
                     }
                 }
             ]
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/maintenanceConfigurations",
+            "apiVersion": "2024-01-02-preview",
+            "name": "[concat(variables('clusterName'),'/aksManagedNodeOSUpgradeSchedule')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "properties": {
+                "maintenanceWindow": {
+                    "durationHours": 12,
+                    "schedule": {
+                        "weekly": {
+                            "dayOfWeek": "Tuesday",
+                            "intervalWeeks": 1
+                        }
+                    },
+                    "startTime": "21:00"
+                }
+            }
         },
         {
             "type": "Microsoft.KubernetesConfiguration/extensions",

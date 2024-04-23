@@ -25,8 +25,8 @@ The cluster now has [Traefik configured with a TLS certificate](./08-secret-mana
    > :warning: Note that this canary testing story is not recommended for organizations that are operating critical production systems as peak utilization. But this is a good example of what are the options being enabled when adding more availability to your architecture, and having some idle resources to be employed with care.
 
    ```bash
-   kubectl apply -f ./workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
-   kubectl apply -f ./workload/aspnetapp-canary.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl apply -f ./workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
+   kubectl apply -f ./workload/aspnetapp-canary.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04_AKS_MRB
    ```
 
 1. Wait until both regions are ready to process requests
