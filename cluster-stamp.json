@@ -50,9 +50,9 @@
             }
         },
         "appGatewayListenerCertificate": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
-                "description": "The certificate data for app gateway TLS termination. It is base64"
+                "description": "The PFX certificate for app gateway TLS termination. It is base64"
             }
         },
         "aksIngressControllerCertificate": {
