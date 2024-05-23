@@ -53,8 +53,8 @@ The following two resource groups will be created and populated with networking 
    BASE_FIREWALL_POLICIES_ID=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.baseFirewallPoliciesId.value -o tsv)
    echo BASE_FIREWALL_POLICIES_ID: $BASE_FIREWALL_POLICIES_ID
 
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionA -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.eastus2.json
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.json -n hub-regionB -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.bicep -n hub-regionA -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.eastus2.json
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.bicep -n hub-regionB -p baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
 
    # [Creating the spokes takes about ten minutes to run.]
    RESOURCEID_VNET_HUB_REGIONA=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-regionA --query properties.outputs.hubVnetId.value -o tsv)
