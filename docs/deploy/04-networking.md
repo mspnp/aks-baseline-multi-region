@@ -71,8 +71,8 @@ The following two resource groups will be created and populated with networking 
    echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03
    echo RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04: $RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04
 
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionA -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2  @networking/hub-region.parameters.eastus2.json
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.json -n hub-regionB -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.bicep -n hub-regionA -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.eastus2.json
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v1.1.bicep -n hub-regionB -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" baseFirewallPoliciesId=$BASE_FIREWALL_POLICIES_ID firewallPolicyLocation=eastus2 @networking/hub-region.parameters.centralus.json
     ```
 
 ## Preparing for a Failover
