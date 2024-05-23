@@ -62,8 +62,8 @@ The following two resource groups will be created and populated with networking 
    echo RESOURCEID_VNET_HUB_REGIONA: $RESOURCEID_VNET_HUB_REGIONA
    echo RESOURCEID_VNET_HUB_REGIONB: $RESOURCEID_VNET_HUB_REGIONB
 
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONA}" @networking/spoke-BU0001A0042.parameters.eastus2.json
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONB}" @networking/spoke-BU0001A0042.parameters.centralus.json
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.bicep -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONA}" @networking/spoke-BU0001A0042.parameters.eastus2.json
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.bicep -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGIONB}" @networking/spoke-BU0001A0042.parameters.centralus.json
 
    # [Enrolling the spokes into the hubs takes about ten minutes to run (each).]
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
