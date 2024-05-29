@@ -61,7 +61,7 @@ resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssi
 resource rgClusterMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   name: guid(resourceGroup().id)
   properties: {
-    roleDefinitionId: networkContributorRole
+    roleDefinitionId: networkContributorRole.id
     principalId: miClusterControlPlanePrincipalId
     principalType: 'ServicePrincipal'
   }
