@@ -254,8 +254,9 @@ resource bastionNetworkNsg 'Microsoft.Network/networkSecurityGroups@2020-05-01' 
   }
 }
 
-resource bastionNetworkNsgName_Microsoft_Insights_default 'Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: '${bastionNetworkNsgName}/Microsoft.Insights/default'
+resource bastionNetworkNsgName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: bastionNetworkNsg
   properties: {
     workspaceId: hubLa.id
     logs: [
@@ -309,8 +310,9 @@ resource hubVnet 'Microsoft.Network/virtualNetworks@2020-05-01' = {
   }
 }
 
-resource hubVnetName_Microsoft_Insights_default 'Microsoft.Network/virtualNetworks/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: '${hubVNetName}/Microsoft.Insights/default'
+resource hubVnetName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: hubVnet
   properties: {
     workspaceId: hubLa.id
     metrics: [
@@ -325,8 +327,8 @@ resource hubVnetName_Microsoft_Insights_default 'Microsoft.Network/virtualNetwor
   ]
 }
 
-resource hubFwPipNames 'Microsoft.Network/publicIpAddresses@2020-05-01' = [
-  for item in hubFwPipNames_var: {
+resource hubFwPips 'Microsoft.Network/publicIpAddresses@2020-05-01' = [
+  for item in hubFwPipNames: {
     name: item
     location: location
     sku: {
@@ -741,8 +743,9 @@ resource hubFw 'Microsoft.Network/azureFirewalls@2020-11-01' = {
   ]
 }
 
-resource hubFwName_Microsoft_Insights_default 'Microsoft.Network/azureFirewalls/providers/diagnosticSettings@2021-05-01-preview' = {
-  name: '${hubFwName}/Microsoft.Insights/default'
+resource hubFwName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: hubFw
   properties: {
     workspaceId: hubLa.id
     logs: [
@@ -784,25 +787,9 @@ resource regionFlowLowStorageAccount 'Microsoft.Storage/storageAccounts@2021-02-
   }
 }
 
-resource regionFlowLowStorageAccountName_Microsoft_Insights_default 'Microsoft.Storage/storageAccounts/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: '${regionFlowLowStorageAccountName}/Microsoft.Insights/default'
-  properties: {
-    workspaceId: hubLa.id
-    logs: []
-    metrics: [
-      {
-        category: 'Transaction'
-        enabled: true
-      }
-    ]
-  }
-  dependsOn: [
-    regionFlowLowStorageAccount
-  ]
-}
-
-resource regionFlowLowStorageAccountName_default_Microsoft_Insights_default 'Microsoft.Storage/storageAccounts/blobServices/providers/diagnosticsettings@2017-05-01-preview' = {
-  name: '${regionFlowLowStorageAccountName}/default/Microsoft.Insights/default'
+resource regionFlowLowStorageAccountName_default_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: regionFlowLowStorageAccount
   properties: {
     workspaceId: hubLa.id
     metrics: [
@@ -812,9 +799,7 @@ resource regionFlowLowStorageAccountName_default_Microsoft_Insights_default 'Mic
       }
     ]
   }
-  dependsOn: [
-    regionFlowLowStorageAccount
-  ]
+  dependsOn: []
 }
 
 module flowLogsNsgBastion './virtualNetworkFlowlogs.bicep' = if (deployFlowLogResources) {
