@@ -57,17 +57,10 @@ param deployFlowLogResources bool = true
 
 /*** VARIABLES ***/
 
-var baseFwPipName = 'pip-fw-${location}'
-var hubFwPipNames = [
-  '${baseFwPipName}-default'
-  '${baseFwPipName}-01'
-  '${baseFwPipName}-02'
-]
-
 /*** RESOURCES ***/
 
-resource hubLa 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: 'la-hub-${location}-${uniqueString(hubVnet.id)}'
+resource laHub 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: 'la-hub-${location}-${uniqueString(vnetHub.id)}'
   location: location
   properties: {
     sku: {
@@ -79,7 +72,7 @@ resource hubLa 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
-resource bastionNetworkNsg 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
   name: 'nsg-${location}-bastion'
   location: location
   properties: {
@@ -240,11 +233,11 @@ resource bastionNetworkNsg 'Microsoft.Network/networkSecurityGroups@2020-05-01' 
   }
 }
 
-resource bastionNetworkNsgName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource nsgBastionSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'default'
-  scope: bastionNetworkNsg
+  scope: nsgBastionSubnet
   properties: {
-    workspaceId: hubLa.id
+    workspaceId: laHub.id
     logs: [
       {
         category: 'NetworkSecurityGroupEvent'
@@ -259,7 +252,7 @@ resource bastionNetworkNsgName_Microsoft_Insights_default 'Microsoft.Insights/di
   dependsOn: []
 }
 
-resource hubVnet 'Microsoft.Network/virtualNetworks@2020-05-01' = {
+resource vnetHub 'Microsoft.Network/virtualNetworks@2020-05-01' = {
   name: 'vnet-${location}-hub'
   location: location
   properties: {
@@ -284,7 +277,7 @@ resource hubVnet 'Microsoft.Network/virtualNetworks@2020-05-01' = {
         properties: {
           addressPrefix: azureBastionSubnetAddressSpace
           networkSecurityGroup: {
-            id: bastionNetworkNsg.id
+            id: nsgBastionSubnet.id
           }
         }
       }
@@ -296,11 +289,11 @@ resource hubVnet 'Microsoft.Network/virtualNetworks@2020-05-01' = {
   }
 }
 
-resource hubVnetName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'default'
-  scope: hubVnet
+  scope: vnetHub
   properties: {
-    workspaceId: hubLa.id
+    workspaceId: laHub.id
     metrics: [
       {
         category: 'AllMetrics'
@@ -311,9 +304,10 @@ resource hubVnetName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSe
   dependsOn: []
 }
 
-resource hubFwPips 'Microsoft.Network/publicIpAddresses@2020-05-01' = [
-  for item in hubFwPipNames: {
-    name: item
+// Allocate three IP addresses to the firewall
+var numFirewallIpAddressesToAssign = 3
+resource pipsAzureFirewall 'Microsoft.Network/publicIpAddresses@2020-05-01' = [for i in range(0, numFirewallIpAddressesToAssign): {
+    name: 'pip-fw-${location}-${padLeft(i, 2, '0')}'
     location: location
     sku: {
       name: 'Standard'
@@ -323,10 +317,29 @@ resource hubFwPips 'Microsoft.Network/publicIpAddresses@2020-05-01' = [
       idleTimeoutInMinutes: 4
       publicIPAddressVersion: 'IPv4'
     }
-  }
-]
+}]
 
-resource fwPolicies 'Microsoft.Network/firewallPolicies@2020-11-01' = {
+resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [for i in range(0, numFirewallIpAddressesToAssign): {
+  name: 'default'
+  scope: pipsAzureFirewall[i]
+  properties: {
+    workspaceId: laHub.id
+    logs: [
+      {
+        categoryGroup: 'audit'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}]
+
+resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
   name: 'fw-policies-${location}'
   location: firewallPolicyLocation
   properties: {
@@ -345,41 +358,33 @@ resource fwPolicies 'Microsoft.Network/firewallPolicies@2020-11-01' = {
       enableProxy: true
     }
   }
-}
 
-resource fwPoliciesName_DefaultDnatRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2020-11-01' = {
-  parent: fwPolicies
-  name: 'DefaultDnatRuleCollectionGroup'
-  location: location
-  properties: {
-    priority: 100
-    ruleCollections: []
+  resource defaultDnaRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {
+    name: 'DefaultDnatRuleCollectionGroup'
+    properties: {
+      priority: 100
+      ruleCollections: []
+    }
+  }
+
+  resource defaultNetworkRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {  
+    name: 'DefaultNetworkRuleCollectionGroup'
+    properties: {
+      priority: 200
+      ruleCollections: []
+    }
+  }
+
+  resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {
+    name: 'DefaultApplicationRuleCollectionGroup'
+    properties: {
+      priority: 300
+      ruleCollections: []
+    }
   }
 }
 
-resource fwPoliciesName_DefaultApplicationRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2020-11-01' = {
-  parent: fwPolicies
-  name: 'DefaultApplicationRuleCollectionGroup'
-  location: location
-  properties: {
-    priority: 300
-    ruleCollections: []
-  }
-  dependsOn: [fwPoliciesName_DefaultDnatRuleCollectionGroup]
-}
-
-resource fwPoliciesName_DefaultNetworkRuleCollectionGroup 'Microsoft.Network/firewallPolicies/ruleCollectionGroups@2020-11-01' = {
-  parent: fwPolicies
-  name: 'DefaultNetworkRuleCollectionGroup'
-  location: location
-  properties: {
-    priority: 200
-    ruleCollections: []
-  }
-  dependsOn: [fwPoliciesName_DefaultApplicationRuleCollectionGroup]
-}
-
-resource hubFw 'Microsoft.Network/azureFirewalls@2020-11-01' = {
+resource hubFirewall 'Microsoft.Network/azureFirewalls@2020-11-01' = {
   name: 'fw-${location}'
   location: location
   zones: ['1', '2', '3']
@@ -390,63 +395,34 @@ resource hubFw 'Microsoft.Network/azureFirewalls@2020-11-01' = {
       tier: 'Standard'
     }
     threatIntelMode: 'Deny'
-    ipConfigurations: [
-      {
-        name: hubFwPipNames[0]
-        properties: {
-          subnet: {
-            id: hubVnet::azureFirewallSubnet.id
-          }
-          publicIPAddress: {
-            id: resourceId(
-              'Microsoft.Network/publicIpAddresses',
-              hubFwPipNames[0]
-            )
-          }
+    ipConfigurations: [for i in range(0, numFirewallIpAddressesToAssign): {
+      name: pipsAzureFirewall[i].name
+      properties: {
+        subnet: (0 == i) ? {
+          id: vnetHub::azureFirewallSubnet.id
+        } : null
+        publicIPAddress: {
+          id: pipsAzureFirewall[i].id
         }
       }
-      {
-        name: hubFwPipNames[1]
-        properties: {
-          publicIPAddress: {
-            id: resourceId(
-              'Microsoft.Network/publicIpAddresses',
-              hubFwPipNames[1]
-            )
-          }
-        }
-      }
-      {
-        name: hubFwPipNames[2]
-        properties: {
-          publicIPAddress: {
-            id: resourceId(
-              'Microsoft.Network/publicIpAddresses',
-              hubFwPipNames[2]
-            )
-          }
-        }
-      }
-    ]
+    }]
     natRuleCollections: []
     networkRuleCollections: []
     applicationRuleCollections: []
     firewallPolicy: {
-      id: fwPolicies.id
+      id: fwPolicy.id
     }
   }
   dependsOn: [
-    hubFwPips
-    hubVnet
-    fwPoliciesName_DefaultNetworkRuleCollectionGroup
+    pipsAzureFirewall
   ]
 }
 
-resource hubFwName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'default'
-  scope: hubFw
+  scope: hubFirewall
   properties: {
-    workspaceId: hubLa.id
+    workspaceId: laHub.id
     logs: [
       {
         categoryGroup: 'allLogs'
@@ -484,11 +460,11 @@ resource regionFlowLowStorageAccount 'Microsoft.Storage/storageAccounts@2021-02-
   }
 }
 
-resource regionFlowLowStorageAccountName_default_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource regionFlowLowStorageAccount_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'default'
   scope: regionFlowLowStorageAccount
   properties: {
-    workspaceId: hubLa.id
+    workspaceId: laHub.id
     metrics: [
       {
         category: 'Transaction'
@@ -503,9 +479,9 @@ module flowLogsNsgBastion './virtualNetworkFlowlogs.bicep' = if (deployFlowLogRe
   name: 'nsgBastionFlowlogs'
   scope: resourceGroup('networkWatcherRG')
   params: {
-    nsgId: bastionNetworkNsg.id
+    nsgId: nsgBastionSubnet.id
     flowlogStorageAccountId: regionFlowLowStorageAccount.id
-    laId: hubLa.id
+    laId: laHub.id
     location: location
   }
   dependsOn: []
@@ -513,4 +489,4 @@ module flowLogsNsgBastion './virtualNetworkFlowlogs.bicep' = if (deployFlowLogRe
 
 /*** OUTPUTS ***/
 
-output hubVnetId string = hubVnet.id
+output hubVnetId string = vnetHub.id
