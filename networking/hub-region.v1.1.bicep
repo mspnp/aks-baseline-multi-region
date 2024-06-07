@@ -58,24 +58,17 @@ param deployFlowLogResources bool = true
 
 /*** VARIABLES ***/
 
-var aksIpGroupName = 'ipg-${location}-AksNodepools'
 var baseFwPipName = 'pip-fw-${location}'
-var hubFwPipNames_var = [
+var hubFwPipNames = [
   '${baseFwPipName}-default'
   '${baseFwPipName}-01'
   '${baseFwPipName}-02'
 ]
-var hubFwName = 'fw-${location}'
-var hubVNetName = 'vnet-${location}-hub'
-var bastionNetworkNsgName = 'nsg-${location}-bastion'
-var hubLaName = 'la-hub-${location}-${uniqueString(hubVnet.id)}'
-var fwPoliciesName = 'fw-policies-${location}'
-var regionFlowLowStorageAccountName = take('stnfl${location}${uniqueString(resourceGroup().id)}', 24)
 
 /*** RESOURCES ***/
 
 resource hubLa 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
-  name: hubLaName
+  name: 'la-hub-${location}-${uniqueString(hubVnet.id)}'
   location: location
   properties: {
     sku: {
@@ -88,7 +81,7 @@ resource hubLa 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
 }
 
 resource bastionNetworkNsg 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
-  name: bastionNetworkNsgName
+  name: 'nsg-${location}-bastion'
   location: location
   properties: {
     securityRules: [
@@ -276,7 +269,7 @@ resource bastionNetworkNsgName_Microsoft_Insights_default 'Microsoft.Insights/di
 }
 
 resource hubVnet 'Microsoft.Network/virtualNetworks@2020-05-01' = {
-  name: hubVNetName
+  name: 'vnet-${location}-hub'
   location: location
   properties: {
     addressSpace: {
@@ -307,6 +300,10 @@ resource hubVnet 'Microsoft.Network/virtualNetworks@2020-05-01' = {
         }
       }
     ]
+  }
+
+  resource azureFirewallSubnet 'subnets' existing = {
+    name: 'AzureFirewallSubnet'
   }
 }
 
@@ -343,7 +340,7 @@ resource hubFwPips 'Microsoft.Network/publicIpAddresses@2020-05-01' = [
 ]
 
 resource aksIpGroup 'Microsoft.Network/ipGroups@2020-05-01' = {
-  name: aksIpGroupName
+  name: 'ipg-${location}-AksNodepools'
   location: location
   properties: {
     ipAddresses: [for item in nodepoolSubnetResourceIds: reference(item, '2020-05-01').addressPrefix]
@@ -351,7 +348,7 @@ resource aksIpGroup 'Microsoft.Network/ipGroups@2020-05-01' = {
 }
 
 resource fwPolicies 'Microsoft.Network/firewallPolicies@2020-11-01' = {
-  name: fwPoliciesName
+  name: 'fw-policies-${location}'
   location: firewallPolicyLocation
   properties: {
     basePolicy: {
@@ -686,7 +683,7 @@ resource fwPoliciesName_DefaultNetworkRuleCollectionGroup 'Microsoft.Network/fir
 }
 
 resource hubFw 'Microsoft.Network/azureFirewalls@2020-11-01' = {
-  name: hubFwName
+  name: 'fw-${location}'
   location: location
   zones: [
     '1'
@@ -702,29 +699,29 @@ resource hubFw 'Microsoft.Network/azureFirewalls@2020-11-01' = {
     threatIntelMode: 'Deny'
     ipConfigurations: [
       {
-        name: hubFwPipNames_var[0]
+        name: hubFwPipNames[0]
         properties: {
           subnet: {
-            id: resourceId('Microsoft.Network/virtualNetworks/subnets', hubVNetName, 'AzureFirewallSubnet')
+            id: hubVnet::azureFirewallSubnet.id
           }
           publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIpAddresses', hubFwPipNames_var[0])
-          }
-        }
-      }
-      {
-        name: hubFwPipNames_var[1]
-        properties: {
-          publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIpAddresses', hubFwPipNames_var[1])
+            id: resourceId('Microsoft.Network/publicIpAddresses', hubFwPipNames[0])
           }
         }
       }
       {
-        name: hubFwPipNames_var[2]
+        name: hubFwPipNames[1]
         properties: {
           publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIpAddresses', hubFwPipNames_var[2])
+            id: resourceId('Microsoft.Network/publicIpAddresses', hubFwPipNames[1])
+          }
+        }
+      }
+      {
+        name: hubFwPipNames[2]
+        properties: {
+          publicIPAddress: {
+            id: resourceId('Microsoft.Network/publicIpAddresses', hubFwPipNames[2])
           }
         }
       }
@@ -737,7 +734,7 @@ resource hubFw 'Microsoft.Network/azureFirewalls@2020-11-01' = {
     }
   }
   dependsOn: [
-    hubFwPipNames
+    hubFwPips
     hubVnet
     fwPoliciesName_DefaultNetworkRuleCollectionGroup
   ]
@@ -767,7 +764,7 @@ resource hubFwName_Microsoft_Insights_default 'Microsoft.Insights/diagnosticSett
 }
 
 resource regionFlowLowStorageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
-  name: regionFlowLowStorageAccountName
+  name: take('stnfl${location}${uniqueString(resourceGroup().id)}', 24)
   location: location
   sku: {
     name: 'standard_LRS'
