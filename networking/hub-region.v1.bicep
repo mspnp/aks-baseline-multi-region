@@ -373,6 +373,9 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
       priority: 200
       ruleCollections: []
     }
+    dependsOn: [
+      defaultDnaRuleCollectionGroup
+    ]
   }
 
   resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {
@@ -381,6 +384,9 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
       priority: 300
       ruleCollections: []
     }
+    dependsOn: [
+      defaultNetworkRuleCollectionGroup
+    ]
   }
 }
 

@@ -419,6 +419,9 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
         }
       ]
     }
+    dependsOn: [
+      defaultDnaRuleCollectionGroup
+    ]
   }
 
   resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {
@@ -675,6 +678,9 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
         }
       ]
     }
+    dependsOn: [
+      defaultNetworkRuleCollectionGroup
+    ]
   }
 }
 
