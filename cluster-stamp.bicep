@@ -67,77 +67,100 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 @description('Your cluster will be bootstrapped from this directory under cluster-manifests.')
 param gitOpsBootstrappingRepoDirectoryName string = 'region1'
 
+@description('Domain name to use for App Gateway and AKS ingress.')
+param domainName string = 'contoso.com'
+
+/*** VARIABLES ***/
 var orgAppId = 'BU0001A0042'
 var appId = '${orgAppId}-${appInstanceId}'
-var networkContributorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7'
-var monitoringMetricsPublisherRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb'
-var readerRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7'
+
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
-var nodeResourceGroupName = 'rg-${clusterName}-nodepools'
 var clusterName = 'aks-${subRgUniqueString}'
-var containerRegistryName = split(containerRegistryId, '/')[8]
-var vNetResourceGroup = split(targetVnetResourceId, '/')[4]
-var vnetName = split(targetVnetResourceId, '/')[8]
-var vnetNodePoolSubnetResourceId = '${targetVnetResourceId}/subnets/snet-clusternodes'
-var clusterIdentityDeploymentName = 'EnsureClusterIdentityHasRbacToSelfManagedRes-${clusterName}'
-var vnetIngressServicesSubnetResourceId = '${targetVnetResourceId}/subnets/snet-cluster-ingressservices'
 var agwName = 'apw-${clusterName}'
-var akvPrivateDnsZonesName = 'privatelink.vaultcore.azure.net'
-var acrPrivateDnsZonesName = 'privatelink.azurecr.io'
-var keyVaultName = 'kv-${clusterName}'
-var policyResourceIdAKSLinuxRestrictive = '/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00'
-var policyResourceIdEnforceHttpsIngress = '/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d'
-var policyResourceIdEnforceInternalLoadBalancers = '/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e'
-var policyResourceIdRoRootFilesystem = '/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80'
-var policyResourceIdEnforceResourceLimits = '/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164'
-var policyResourceIdEnforceImageSource = '/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469'
-var policyAssignmentNameAKSLinuxRestrictive_var = guid(
-  policyResourceIdAKSLinuxRestrictive,
-  resourceGroup().name,
-  clusterName
-)
-var policyAssignmentNameEnforceHttpsIngress_var = guid(
-  policyResourceIdEnforceHttpsIngress,
-  resourceGroup().name,
-  clusterName
-)
-var policyAssignmentNameEnforceInternalLoadBalancers_var = guid(
-  policyResourceIdEnforceInternalLoadBalancers,
-  resourceGroup().name,
-  clusterName
-)
-var policyAssignmentNameRoRootFilesystem_var = guid(policyResourceIdRoRootFilesystem, resourceGroup().name, clusterName)
-var policyAssignmentNameEnforceResourceLimits_var = guid(
-  policyResourceIdEnforceResourceLimits,
-  resourceGroup().name,
-  clusterName
-)
-var policyAssignmentNameEnforceImageSource_var = guid(
-  policyResourceIdEnforceImageSource,
-  resourceGroup().name,
-  clusterName
-)
+
+var aksIngressDomainName = 'aks-ingress.${domainName}'
+var aksBackendDomainName = '${toLower(appId)}.${aksIngressDomainName}'
+
+/*** EXISTING TENANT RESOURCES ***/
+
+// Built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' Azure Policy for Kubernetes initiative definition
+var policyResourceIdAKSLinuxRestrictive = tenantResourceId('Microsoft.Authorization/policySetDefinitions', '42b8ef37-b724-4e24-bbc8-7a7708edfe00')
+
+// Built-in 'Kubernetes clusters should be accessible only over HTTPS' Azure Policy for Kubernetes policy definition
+var policyResourceIdEnforceHttpsIngress = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d')
+
+// Built-in 'Kubernetes clusters should use internal load balancers' Azure Policy for Kubernetes policy definition
+var policyResourceIdEnforceInternalLoadBalancers = tenantResourceId('Microsoft.Authorization/policyDefinitions', '3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e')
+
+// Built-in 'Kubernetes cluster containers should run with a read only root file system' Azure Policy for Kubernetes policy definition
+var policyResourceIdRoRootFilesystem = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'df49d893-a74c-421d-bc95-c663042e5b80')
+
+// Built-in 'AKS container CPU and memory resource limits should not exceed the specified limits' Azure Policy for Kubernetes policy definition
+var policyResourceIdEnforceResourceLimits = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'e345eecc-fa47-480f-9e88-67dcc122b164')
+
+// Built-in 'AKS containers should only use allowed images' Azure Policy for Kubernetes policy definition
+var policyResourceIdEnforceImageSource = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'febd0533-8e55-448f-b837-bd0e06f16469')
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
-/*** EXISTING SHARED RESOURCES ***/
+// Built-in Azure RBAC role that is applied to a cluster to grant its monitoring agent's identity with publishing metrics and push alerts permissions.
+resource monitoringMetricsPublisherRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '3913510d-42f4-4e42-8a64-420c390055eb'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges.  Granted to App Gateway's managed identity.
+resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to both Key Vault and our workload's identity.
+resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '4633458b-17de-408a-b874-0445c86b69e6'
+  scope: subscription()
+}
+
+resource nodeResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+  name: 'rg-${clusterName}-nodepools'
+  scope: subscription()
+}
 
 // Shared resources resource group
-resource sharedResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+resource sharedResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   scope: subscription()
   name: split(containerRegistryId, '/')[4]
+}
+
+/*** EXISTING SHARED RESOURCES ***/
+
+// Azure Container Registry
+resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
+  scope: sharedResourceGroup
+  name: split(containerRegistryId, '/')[8]
+}
+
+// Log Analytics Workspace
+resource la 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
+  scope: sharedResourceGroup
+  name: split(logAnalyticsWorkspaceId, '/')[8]
+}
+
+resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' existing = {
+  scope: sharedResourceGroup
+  name: 'ContainerInsights(${la.name})'
 }
 
 /*** EXISTING SPOKE RESOURCES ***/
 
 // Spoke resource group
-resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   scope: subscription()
   name: split(targetVnetResourceId, '/')[4]
 }
 
 // Spoke virtual network
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-05-01' existing = {
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: targetResourceGroup
   name: last(split(targetVnetResourceId, '/'))
 
@@ -159,26 +182,29 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-05-01' exi
 
 /*** RESOURCES ***/
 
-resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+// The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
+resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
 }
 
-resource mi_appgateway_frontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+// User Managed Identity that App Gateway is assigned. Used for Azure Key Vault Access.
+resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: 'mi-appgateway-frontend'
   location: location
 }
 
-resource podmi_ingress_controller 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+// User Managed Identity for the cluster's ingress controller pods via Workload Identity. Used for Azure Key Vault Access.
+resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: 'podmi-ingress-controller'
   location: location
 }
 
-resource podmi_ingress_controller_ingress_controller 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2022-01-31-preview' = {
-  parent: podmi_ingress_controller
+resource ficIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2023-07-31-preview' = {
+  parent: podmiIngressController
   name: 'ingress-controller'
   properties: {
-    issuer: cluster.properties.oidcIssuerProfile.issuerURL
+    issuer: mc.properties.oidcIssuerProfile.issuerURL
     subject: 'system:serviceaccount:a0042:traefik-ingress-controller'
     audiences: [
       'api://AzureADTokenExchange'
@@ -186,14 +212,14 @@ resource podmi_ingress_controller_ingress_controller 'Microsoft.ManagedIdentity/
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
-  name: keyVaultName
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
+  name: 'kv-${clusterName}'
   location: location
   properties: {
     accessPolicies: [
       {
-        tenantId: mi_appgateway_frontend.properties.tenantId
-        objectId: mi_appgateway_frontend.properties.principalId
+        tenantId: miAppGatewayFrontend.properties.tenantId
+        objectId: miAppGatewayFrontend.properties.principalId
         permissions: {
           secrets: [
             'get'
@@ -205,8 +231,8 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
         }
       }
       {
-        tenantId: podmi_ingress_controller.properties.tenantId
-        objectId: podmi_ingress_controller.properties.principalId
+        tenantId: podmiIngressController.properties.tenantId
+        objectId: podmiIngressController.properties.principalId
         permissions: {
           secrets: [
             'get'
@@ -234,30 +260,28 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
     enabledForTemplateDeployment: false
     enableSoftDelete: true
   }
-}
 
-resource keyVaultName_sslcert 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
-  parent: keyVault
-  name: 'sslcert'
-  properties: {
-    value: appGatewayListenerCertificate
-    recoveryLevel: 'Purgeable'
+  resource kvsGatewayExternalCert 'secrets@2023-07-01' = {
+    name: 'gateway-external-pfx-cert'
+    properties: {
+      value: appGatewayListenerCertificate
+    }
   }
-}
-
-resource keyVaultName_appgw_ingress_internal_aks_ingress_contoso_com_tls 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
-  parent: keyVault
-  name: 'appgw-ingress-internal-aks-ingress-contoso-com-tls'
-  properties: {
-    value: aksIngressControllerCertificate
-    recoveryLevel: 'Purgeable'
+  
+  resource kvsAppGwIngressInternalAksIngressTls 'secrets@2023-07-01' = {
+    name: 'appgw-ingress-internal-aks-ingress-tls'
+    properties: {
+      value: aksIngressControllerCertificate
+    }
   }
+  
 }
 
-resource keyVaultName_Microsoft_Insights_default 'Microsoft.KeyVault/vaults/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: '${keyVaultName}/Microsoft.Insights/default'
+resource kv_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: kv
+  name: 'default'
   properties: {
-    workspaceId: logAnalyticsWorkspaceId
+    workspaceId: la.id
     logs: [
       {
         category: 'AuditEvent'
@@ -271,53 +295,92 @@ resource keyVaultName_Microsoft_Insights_default 'Microsoft.KeyVault/vaults/prov
       }
     ]
   }
-  dependsOn: [
-    keyVault
-  ]
 }
 
-resource keyVaultName_Microsoft_Authorization_id_readerRole 'Microsoft.KeyVault/vaults/providers/roleAssignments@2018-09-01-preview' = {
-  name: '${keyVaultName}/Microsoft.Authorization/${guid(concat(resourceGroup().id),readerRole)}'
+// Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
+resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole.id)
   properties: {
-    roleDefinitionId: readerRole
-    principalId: podmi_ingress_controller.properties.principalId
+    roleDefinitionId: keyVaultSecretsUserRole.id
+    principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: [
-    keyVault
-  ]
 }
 
-resource acrPrivateDnsZones 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: acrPrivateDnsZonesName
-  location: 'global'
-  properties: {}
-}
-
-resource acrPrivateDnsZonesName_to_vnet 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: acrPrivateDnsZones
-  name: 'to_${vnetName}'
-  location: 'global'
+// Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
+resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReaderRole.id)
   properties: {
-    virtualNetwork: {
-      id: targetVnetResourceId
-    }
-    registrationEnabled: false
+    roleDefinitionId: keyVaultReaderRole.id
+    principalId: miAppGatewayFrontend.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
-resource nodepools_to_akv 'Microsoft.Network/privateEndpoints@2020-05-01' = {
-  name: 'nodepools-to-akv'
+// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates.
+resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
+  properties: {
+    roleDefinitionId: keyVaultSecretsUserRole.id
+    principalId: podmiIngressController.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
+resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
+  properties: {
+    roleDefinitionId: keyVaultReaderRole.id
+    principalId: podmiIngressController.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
+  name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
+  scope: targetResourceGroup
+  params: {
+    miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
+    clusterControlPlaneIdentityName: miClusterControlPlane.name
+    targetVirtualNetworkName: targetVirtualNetwork.name
+  }
+}
+
+resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.vaultcore.azure.net'
+  location: 'global'
+  properties: {}
+
+  // Enabling Azure Key Vault Private Link on cluster vnet.
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${targetVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: 'pe-${kv.name}'
   location: location
   properties: {
     subnet: {
-      id: vnetNodePoolSubnetResourceId
+      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
     }
     privateLinkServiceConnections: [
       {
-        name: 'nodepools'
+        name: 'to_${targetVirtualNetwork.name}'
         properties: {
-          privateLinkServiceId: keyVault.id
+          privateLinkServiceId: kv.id
           groupIds: [
             'vault'
           ]
@@ -325,332 +388,55 @@ resource nodepools_to_akv 'Microsoft.Network/privateEndpoints@2020-05-01' = {
       }
     ]
   }
-}
 
-resource nodepools_to_akv_default 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-05-01' = {
-  parent: nodepools_to_akv
-  name: 'default'
-  location: location
-  properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: 'privatelink-akv-net'
-        properties: {
-          privateDnsZoneId: akvPrivateDnsZones.id
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-akv-net'
+          properties: {
+            privateDnsZoneId: pdzKv.id
+          }
         }
-      }
-    ]
-  }
-}
-
-resource akvPrivateDnsZones 'Microsoft.Network/privateDnsZones@2018-09-01' = {
-  name: akvPrivateDnsZonesName
-  location: 'global'
-  properties: {}
-}
-
-resource akvPrivateDnsZonesName_to_vnet 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: akvPrivateDnsZones
-  name: 'to_${vnetName}'
-  location: 'global'
-  properties: {
-    virtualNetwork: {
-      id: targetVnetResourceId
-    }
-    registrationEnabled: false
-  }
-}
-
-resource aks_ingress_contoso_com 'Microsoft.Network/privateDnsZones@2018-09-01' = {
-  name: 'aks-ingress.contoso.com'
-  location: 'global'
-  properties: {}
-}
-
-resource aks_ingress_contoso_com_orgAppId 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
-  parent: aks_ingress_contoso_com
-  name: toLower(orgAppId)
-  properties: {
-    ttl: 3600
-    aRecords: [
-      {
-        ipv4Address: clusterInternalLoadBalancerIpAddress
-      }
-    ]
-  }
-}
-
-resource aks_ingress_contoso_com_to_vnet 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: aks_ingress_contoso_com
-  name: 'to_${vnetName}'
-  location: 'global'
-  properties: {
-    virtualNetwork: {
-      id: targetVnetResourceId
-    }
-    registrationEnabled: false
-  }
-}
-
-resource agw 'Microsoft.Network/applicationGateways@2020-05-01' = {
-  name: agwName
-  location: location
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${mi_appgateway_frontend.id}': {}
-    }
-  }
-  zones: [
-    '1'
-    '2'
-    '3'
-  ]
-  properties: {
-    sku: {
-      name: 'WAF_v2'
-      tier: 'WAF_v2'
-    }
-    sslPolicy: {
-      policyType: 'Custom'
-      cipherSuites: [
-        'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384'
-        'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256'
       ]
-      minProtocolVersion: 'TLSv1_2'
     }
-    trustedRootCertificates: [
-      {
-        name: 'root-cert-wildcard-aks-ingress-contoso'
-        properties: {
-          keyVaultSecretId: '${keyVault.properties.vaultUri}secrets/appgw-ingress-internal-aks-ingress-contoso-com-tls'
+  }
+}
+
+resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: aksIngressDomainName
+  location: 'global'
+
+  resource aks_ingress_contoso_com_orgAppId 'A' = {
+    name: toLower(orgAppId)
+    properties: {
+      ttl: 3600
+      aRecords: [
+        {
+          ipv4Address: clusterInternalLoadBalancerIpAddress
         }
-      }
-    ]
-    gatewayIPConfigurations: [
-      {
-        name: 'apw-ip-configuration'
-        properties: {
-          subnet: {
-            id: '${targetVnetResourceId}/subnets/snet-applicationgateway'
-          }
-        }
-      }
-    ]
-    frontendIPConfigurations: [
-      {
-        name: 'apw-frontend-ip-configuration'
-        properties: {
-          publicIPAddress: {
-            id: resourceId(
-              subscription().subscriptionId,
-              vNetResourceGroup,
-              'Microsoft.Network/publicIpAddresses',
-              'pip-${appId}'
-            )
-          }
-        }
-      }
-    ]
-    frontendPorts: [
-      {
-        name: 'apw-frontend-ports'
-        properties: {
-          port: 443
-        }
-      }
-    ]
-    autoscaleConfiguration: {
-      minCapacity: 0
-      maxCapacity: 10
+      ]
     }
-    webApplicationFirewallConfiguration: {
-      enabled: true
-      firewallMode: 'Prevention'
-      ruleSetType: 'OWASP'
-      ruleSetVersion: '3.0'
+  }
+
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${targetVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVnetResourceId
+      }
+      registrationEnabled: false
     }
-    enableHttp2: false
-    sslCertificates: [
-      {
-        name: '${agwName}-ssl-certificate'
-        properties: {
-          keyVaultSecretId: '${keyVault.properties.vaultUri}secrets/sslcert'
-        }
-      }
-    ]
-    probes: [
-      {
-        name: 'probe-${toLower(appId)}.aks-ingress.contoso.com'
-        properties: {
-          protocol: 'Https'
-          path: '/favicon.ico'
-          interval: 30
-          timeout: 30
-          unhealthyThreshold: 3
-          pickHostNameFromBackendHttpSettings: true
-          minServers: 0
-          match: {}
-        }
-      }
-    ]
-    backendAddressPools: [
-      {
-        name: '${toLower(appId)}.aks-ingress.contoso.com'
-        properties: {
-          backendAddresses: [
-            {
-              fqdn: '${toLower(orgAppId)}.aks-ingress.contoso.com'
-            }
-          ]
-        }
-      }
-    ]
-    backendHttpSettingsCollection: [
-      {
-        name: 'aks-ingress-contoso-backendpool-httpsettings'
-        properties: {
-          port: 443
-          protocol: 'Https'
-          cookieBasedAffinity: 'Disabled'
-          pickHostNameFromBackendAddress: true
-          requestTimeout: 20
-          probe: {
-            id: resourceId('Microsoft.Network/applicationGateways/probes', agwName, 'probe-${toLower(appId)}.aks-ingress.contoso.com')
-          }
-          trustedRootCertificates: [
-            {
-              id: resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', agwName, 'root-cert-wildcard-aks-ingress')
-            }
-          ]
-        }
-      }
-    ]
-    httpListeners: [
-      {
-        name: 'listener-https'
-        properties: {
-          frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', agwName, 'apw-frontend-ip-configuration')
-          }
-          frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', agwName, 'apw-frontend-ports')
-          }
-          protocol: 'Https'
-          sslCertificate: {
-            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', agwName, '${agwName}-ssl-certificate')
-          }
-          hostName: '${reference(resourceId(subscription().subscriptionId,vNetResourceGroup,'Microsoft.Network/publicIpAddresses','pip-${appId}'),'2020-07-01','Full').properties.dnsSettings.domainNameLabel}.${location}.cloudapp.azure.com'
-          hostNames: []
-          requireServerNameIndication: true
-        }
-      }
-    ]
-    requestRoutingRules: [
-      {
-        name: 'apw-routing-rules'
-        properties: {
-          ruleType: 'Basic'
-          httpListener: {
-            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', agwName, 'listener-https')
-          }
-          backendAddressPool: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', agwName, '${toLower(appId)}.aks-ingress.contoso.com')
-          }
-          backendHttpSettings: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', agwName, 'aks-ingress-contoso-backendpool-httpsettings')
-          }
-        }
-      }
-    ]
-  }
+  }  
 }
 
-resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  scope: agw
-  name: 'default'
-  properties: {
-    workspaceId: logAnalyticsWorkspaceId
-    logs: [
-      {
-        category: 'ApplicationGatewayAccessLog'
-        enabled: true
-      }
-      {
-        category: 'ApplicationGatewayPerformanceLog'
-        enabled: true
-      }
-      {
-        category: 'ApplicationGatewayFirewallLog'
-        enabled: true
-      }
-    ]
-  }
-  dependsOn: []
-}
-
-module ensureClusterUserAssignedHasRbacToManageVMSS './nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
-  name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
-  scope: targetResourceGroup
-  params: {
-    miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
-    targetVirtualNetworkName: targetVirtualNetwork.name
-  }
-}
-
-module ensureClusterIdentityHasRbacToPullAcr './nested_EnsureClusterIdentityHasRbacToPullAcr.bicep' = {
-  name: 'EnsureClusterIdentityHasRbacToPullAcr'
-  scope: sharedResourceGroup
-  params: {
-    sharedResourceGroupName: sharedResourceGroup.name
-    acrName: containerRegistryName
-    clusterId: cluster.id
-    miClusterControlPlaneObjectId: cluster.properties.identityProfile.kubeletidentity.objectId
-  }
-}
-
-resource acr_to_vnet 'Microsoft.Network/privateEndpoints@2020-05-01' = {
-  name: 'acr-to-${vnetName}'
-  location: location
-  properties: {
-    subnet: {
-      id: vnetNodePoolSubnetResourceId
-    }
-    privateLinkServiceConnections: [
-      {
-        name: 'nodepools'
-        properties: {
-          privateLinkServiceId: containerRegistryId
-          groupIds: [
-            'registry'
-          ]
-        }
-      }
-    ]
-  }
-  dependsOn: []
-}
-
-resource acr_to_vnetName_default 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-05-01' = {
-  parent: acr_to_vnet
-  name: 'default'
-  location: location
-  properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: 'privatelink-azurecr-io'
-        properties: {
-          privateDnsZoneId: acrPrivateDnsZones.id
-        }
-      }
-    ]
-  }
-}
-
-resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
   name: clusterName
   location: location
   tags: {
+    'Business unit': 'BU0001'
     'Application identifier': appId
   }
   properties: {
@@ -667,8 +453,11 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         osSKU: 'AzureLinux'
         minCount: 3
         maxCount: 4
-        vnetSubnetID: vnetNodePoolSubnetResourceId
+        vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
+        enableCustomCATrust: false
+        enableFIPS: false
+        enableEncryptionAtHost: false
         type: 'VirtualMachineScaleSets'
         mode: 'System'
         scaleSetPriority: 'Regular'
@@ -684,7 +473,9 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         upgradeSettings: {
           maxSurge: '33%'
         }
-        enableFIPS: false
+        nodeTaints: [
+          'CriticalAddonsOnly=true:NoSchedule'
+        ]
       }
       {
         name: 'npuser01'
@@ -696,8 +487,11 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         osSKU: 'AzureLinux'
         minCount: 2
         maxCount: 5
-        vnetSubnetID: vnetNodePoolSubnetResourceId
+        vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
+        enableCustomCATrust: false
+        enableFIPS: false
+        enableEncryptionAtHost: false
         type: 'VirtualMachineScaleSets'
         mode: 'User'
         scaleSetPriority: 'Regular'
@@ -713,7 +507,6 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         upgradeSettings: {
           maxSurge: '33%'
         }
-        enableFIPS: false
       }
     ]
     servicePrincipalProfile: {
@@ -723,10 +516,13 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
       httpApplicationRouting: {
         enabled: false
       }
+      ingressApplicationGateway: {
+        enabled: false
+      }
       omsagent: {
         enabled: true
         config: {
-          logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceId
+          logAnalyticsWorkspaceResourceId: la.id
         }
       }
       aciConnectorLinux: {
@@ -738,6 +534,12 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
           version: 'v2'
         }
       }
+      openServiceMesh: {
+        enabled: false
+      }
+      kubeDashboard: {
+        enabled: false
+      }
       azureKeyvaultSecretsProvider: {
         enabled: true
         config: {
@@ -745,10 +547,9 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
         }
       }
     }
-    nodeResourceGroup: nodeResourceGroupName
+    nodeResourceGroup: nodeResourceGroup.name
     enableRBAC: true
     enablePodSecurityPolicy: false
-    maxAgentPools: 2
     networkProfile: {
       networkPlugin: 'azure'
       networkPolicy: 'azure'
@@ -767,7 +568,6 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
       adminGroupObjectIDs: [
         clusterAdminEntraGroupObjectId
       ]
-      adminUsers: null
       tenantID: k8sControlPlaneAuthorizationTenantId
     }
     autoScalerProfile: {
@@ -789,10 +589,6 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
       'skip-nodes-with-local-storage': 'true'
       'skip-nodes-with-system-pods': 'true'
     }
-    autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'NodeImage'
-      upgradeChannel: 'none'
-    }
     apiServerAccessProfile: {
       authorizedIPRanges: clusterAuthorizedIPRanges
       enablePrivateCluster: false
@@ -800,29 +596,55 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
     podIdentityProfile: {
       enabled: false
     }
+    autoUpgradeProfile: {
+      nodeOSUpgradeChannel: 'NodeImage'
+      upgradeChannel: 'none'
+    }
     disableLocalAccounts: true
+    storageProfile: {  // By default, do not support native state storage, enable as needed to support workloads that require state
+      blobCSIDriver: {
+        enabled: false // Azure Blobs
+      }
+      diskCSIDriver: {
+        enabled: false // Azure Disk
+      }
+      fileCSIDriver: {
+        enabled: false // Azure Files
+      }
+      snapshotController: {
+        enabled: false // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
+      }
+    }
     securityProfile: {
+      workloadIdentity: {
+        enabled: false
+      }
+      imageCleaner: {
+        enabled: false
+        intervalHours: 120 // 5 days
+      }
+      azureKeyVaultKms: {
+        enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
+      }
+      nodeRestriction: {
+        enabled: true // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
+      }
+      customCATrustCertificates: [] // Empty
       defender: {
         securityMonitoring: {
           enabled: false
         }
       }
     }
-    storageProfile: {
-      diskCSIDriver: {
-        enabled: false
-      }
-      fileCSIDriver: {
-        enabled: false
-      }
-      snapshotController: {
-        enabled: false
-      }
-    }
     oidcIssuerProfile: {
       enabled: true
     }
     enableNamespaceResources: false
+    ingressProfile: {
+      webAppRouting: {
+        enabled: false
+      }
+    }
   }
   identity: {
     type: 'UserAssigned'
@@ -835,28 +657,48 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2023-04-01' = {
     tier: 'Standard'
   }
   dependsOn: [
-    policyAssignmentNameAKSLinuxRestrictive
-    policyAssignmentNameEnforceHttpsIngress
-    policyAssignmentNameEnforceImageSource
-    policyAssignmentNameEnforceInternalLoadBalancers
-    policyAssignmentNameEnforceResourceLimits
-    policyAssignmentNameRoRootFilesystem
+    paAKSLinuxRestrictive
+    paEnforceHttpsIngress
+    paEnforceImageSource
+    paEnforceInternalLoadBalancers
+    paEnforceResourceLimits
+    paRoRootFilesystem
   ]
+
+  resource os_maintenanceConfigurations 'maintenanceConfigurations' = {
+    name: 'aksManagedNodeOSUpgradeSchedule'
+    properties: {
+      maintenanceWindow: {
+        durationHours: 12
+        schedule: {
+          weekly: {
+            dayOfWeek: 'Tuesday'
+            intervalWeeks: 1
+          }
+        }
+        startTime: '21:00'
+      }
+    }
+  }
 }
 
-resource clusterName_Microsoft_Authorization_Microsoft_ContainerService_managedClusters_clusterName_omsagent_monitoringMetricsPublisherRole 'Microsoft.ContainerService/managedClusters/providers/roleAssignments@2020-04-01-preview' = {
-  name: '${clusterName}/Microsoft.Authorization/${guid(cluster.id,'omsagent',monitoringMetricsPublisherRole)}'
+// Grant the Azure Monitor (fka as OMS) Agent's Managed Identity the metrics publisher role to push alerts
+resource mcAmaAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: mc
+  name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole.id)
   properties: {
-    roleDefinitionId: monitoringMetricsPublisherRole
-    principalId: reference(cluster.id, '2020-12-01').addonProfiles.omsagent.identity.objectId
+    roleDefinitionId: monitoringMetricsPublisherRole.id
+    principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource clusterName_Microsoft_Insights_default 'Microsoft.ContainerService/managedClusters/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: '${clusterName}/Microsoft.Insights/default'
+// Ensures that flux add-on (extension) is installed.
+resource mc_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: mc
+  name: 'default'
   properties: {
-    workspaceId: logAnalyticsWorkspaceId
+    workspaceId: la.id
     logs: [
       {
         category: 'cluster-autoscaler'
@@ -874,33 +716,17 @@ resource clusterName_Microsoft_Insights_default 'Microsoft.ContainerService/mana
         category: 'guard'
         enabled: true
       }
+      {
+        category: 'kube-scheduler'
+        enabled: false // Only enable while tuning or triaging issues with scheduling. On a normally operating cluster there is minimal value, relative to the log capture cost, to keeping this always enabled.
+      }
     ]
   }
-  dependsOn: [
-    cluster
-  ]
 }
 
-resource clusterName_aksManagedNodeOSUpgradeSchedule 'Microsoft.ContainerService/managedClusters/maintenanceConfigurations@2024-01-02-preview' = {
-  parent: cluster
-  name: 'aksManagedNodeOSUpgradeSchedule'
-  properties: {
-    maintenanceWindow: {
-      durationHours: 12
-      schedule: {
-        weekly: {
-          dayOfWeek: 'Tuesday'
-          intervalWeeks: 1
-        }
-      }
-      startTime: '21:00'
-    }
-  }
-}
-
-resource flux 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
-  scope: cluster
-  name: 'flux'
+resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+  scope: mc
+  name: 'mcFlux_extension'
   properties: {
     extensionType: 'microsoft.flux'
     autoUpgradeMinorVersion: true
@@ -925,11 +751,12 @@ resource flux 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
   ]
 }
 
-resource bootstrap 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03-01' = {
-  scope: cluster
+// Bootstraps your cluster using content from your repo.
+resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2024-04-01-preview' = {
+  scope: mc
   name: 'bootstrap'
   properties: {
-    scope: 'cluster'
+    scope: 'mc'
     namespace: 'flux-system'
     sourceKind: 'GitRepository'
     gitRepository: {
@@ -940,9 +767,9 @@ resource bootstrap 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03
         branch: gitOpsBootstrappingRepoBranch
       }
       sshKnownHosts: ''
-      httpsUser: json('null')
-      httpsCACert: json('null')
-      localAuthRef: json('null')
+      httpsUser: null
+      httpsCACert: null
+      localAuthRef: null
     }
     kustomizations: {
       unifed: {
@@ -957,15 +784,27 @@ resource bootstrap 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03
     }
   }
   dependsOn: [
+    mcFlux_extension
     ensureClusterIdentityHasRbacToPullAcr
-    flux
   ]
 }
 
-resource Node_CPU_utilization_high_for_clusterName_CI_1 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+module ndEnsureClusterUserAssignedHasRbacToManageVMSS './nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
+  name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
+  scope: nodeResourceGroup
+  params: {
+    kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
+  }
+}
+
+resource maHighNodeCPUUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Node CPU utilization high for ${clusterName} CI-1'
+  location: 'global'
   properties: {
+    autoMitigate: true
+    scopes: [
+      mc.id
+    ]
     actions: []
     criteria: {
       allOf: [
@@ -984,29 +823,30 @@ resource Node_CPU_utilization_high_for_clusterName_CI_1 'Microsoft.Insights/metr
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'Node CPU utilization across the cluster.'
+    description: 'Node CPU utilization across the mc.'
     enabled: true
     evaluationFrequency: 'PT1M'
-    scopes: [
-      cluster.id
-    ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Node_working_set_memory_utilization_high_for_clusterName_CI_2 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Node working set memory utilization high for ${clusterName} CI-2'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1025,18 +865,18 @@ resource Node_working_set_memory_utilization_high_for_clusterName_CI_2 'Microsof
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'Node working set memory utilization across the cluster.'
+    description: 'Node working set memory utilization across the mc.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
@@ -1044,10 +884,11 @@ resource Node_working_set_memory_utilization_high_for_clusterName_CI_2 'Microsof
   }
 }
 
-resource Jobs_completed_more_than_6_hours_ago_for_clusterName_CI_11 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maJobsCompletedMoreThan6HoursAgo 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Jobs completed more than 6 hours ago for ${clusterName} CI-11'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1073,7 +914,7 @@ resource Jobs_completed_more_than_6_hours_ago_for_clusterName_CI_11 'Microsoft.I
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1084,18 +925,22 @@ resource Jobs_completed_more_than_6_hours_ago_for_clusterName_CI_11 'Microsoft.I
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT1M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Container_CPU_usage_high_for_clusterName_CI_9 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+  name: 'Container CPU usage violates the configured threshold for ${clusterName} CI-19'
   location: 'global'
-  name: 'Container CPU usage high for ${clusterName} CI-9'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1117,33 +962,37 @@ resource Container_CPU_usage_high_for_clusterName_CI_9 'Microsoft.Insights/metri
               ]
             }
           ]
-          metricName: 'cpuExceededPercentage'
+          metricName: 'cpuThresholdViolated'
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '90'
+          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'This alert monitors container CPU utilization.'
+    description: 'This alert monitors container CPU usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Container_working_set_memory_usage_high_for_clusterName_CI_10 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+  name: 'Container working set memory usage violates the configured threshold for ${clusterName} CI-20'
   location: 'global'
-  name: 'Container working set memory usage high for ${clusterName} CI-10'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1165,33 +1014,37 @@ resource Container_working_set_memory_usage_high_for_clusterName_CI_10 'Microsof
               ]
             }
           ]
-          metricName: 'memoryWorkingSetExceededPercentage'
+          metricName: 'memoryWorkingSetThresholdViolated'
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '90'
+          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'This alert monitors container working set memory utilization.'
+    description: 'This alert monitors container working set memory usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Pods_in_failed_state_for_clusterName_CI_4 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maPodsInFailedState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Pods in failed state for ${clusterName} CI-4'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1210,7 +1063,7 @@ resource Pods_in_failed_state_for_clusterName_CI_4 'Microsoft.Insights/metricAle
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1221,18 +1074,22 @@ resource Pods_in_failed_state_for_clusterName_CI_4 'Microsoft.Insights/metricAle
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Disk_usage_high_for_clusterName_CI_5 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maHighDiskUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Disk usage high for ${clusterName} CI-5'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1258,7 +1115,7 @@ resource Disk_usage_high_for_clusterName_CI_5 'Microsoft.Insights/metricAlerts@2
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1269,18 +1126,22 @@ resource Disk_usage_high_for_clusterName_CI_5 'Microsoft.Insights/metricAlerts@2
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Nodes_in_not_ready_status_for_clusterName_CI_3 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maNodesInNotReadyStatus 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Nodes in not ready status for ${clusterName} CI-3'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1299,7 +1160,7 @@ resource Nodes_in_not_ready_status_for_clusterName_CI_3 'Microsoft.Insights/metr
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1310,18 +1171,22 @@ resource Nodes_in_not_ready_status_for_clusterName_CI_3 'Microsoft.Insights/metr
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Containers_getting_OOM_killed_for_clusterName_CI_6 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maContainersGettingKilledOOM 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Containers getting OOM killed for ${clusterName} CI-6'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1347,7 +1212,7 @@ resource Containers_getting_OOM_killed_for_clusterName_CI_6 'Microsoft.Insights/
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1358,18 +1223,22 @@ resource Containers_getting_OOM_killed_for_clusterName_CI_6 'Microsoft.Insights/
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT1M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Persistent_volume_usage_high_for_clusterName_CI_18 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maHighPersistentVolumeUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Persistent volume usage high for ${clusterName} CI-18'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1395,7 +1264,7 @@ resource Persistent_volume_usage_high_for_clusterName_CI_18 'Microsoft.Insights/
           metricNamespace: 'Insights.Container/persistentvolumes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1406,18 +1275,22 @@ resource Persistent_volume_usage_high_for_clusterName_CI_18 'Microsoft.Insights/
     enabled: false
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Pods_not_in_ready_state_for_clusterName_CI_8 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maPodsNotInReadyState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Pods not in ready state for ${clusterName} CI-8'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1443,7 +1316,7 @@ resource Pods_not_in_ready_state_for_clusterName_CI_8 'Microsoft.Insights/metric
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'LessThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1454,18 +1327,22 @@ resource Pods_not_in_ready_state_for_clusterName_CI_8 'Microsoft.Insights/metric
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource Restarting_container_count_for_clusterName_CI_7 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  location: 'global'
+resource maRestartingContainerCount 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Restarting container count for ${clusterName} CI-7'
+  location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -1491,7 +1368,7 @@ resource Restarting_container_count_for_clusterName_CI_7 'Microsoft.Insights/met
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -1502,19 +1379,23 @@ resource Restarting_container_count_for_clusterName_CI_7 'Microsoft.Insights/met
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
-      cluster.id
+      mc.id
     ]
     severity: 3
     targetResourceType: 'Microsoft.ContainerService/managedClusters'
     windowSize: 'PT1M'
   }
+  dependsOn: [
+    sci
+  ]
 }
 
-resource policyAssignmentNameAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameAKSLinuxRestrictive_var
+resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(policyResourceIdAKSLinuxRestrictive, resourceGroup().id, clusterName)
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdAKSLinuxRestrictive,'2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    displayName: take('[${clusterName}] ${reference(policyResourceIdAKSLinuxRestrictive,'2021-06-01').displayName}', 120)
+    description: reference(policyResourceIdAKSLinuxRestrictive, '2021-06-01').description
     policyDefinitionId: policyResourceIdAKSLinuxRestrictive
     parameters: {
       excludedNamespaces: {
@@ -1523,55 +1404,59 @@ resource policyAssignmentNameAKSLinuxRestrictive 'Microsoft.Authorization/policy
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+
           'cluster-baseline-settings'
         ]
       }
       effect: {
-        value: 'audit'
+        value: 'Audit'
       }
     }
   }
 }
 
-resource policyAssignmentNameEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceHttpsIngress_var
+resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(policyResourceIdEnforceHttpsIngress, resourceGroup().id, clusterName)
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceHttpsIngress,'2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    displayName: take('[${clusterName}] ${reference(policyResourceIdEnforceHttpsIngress,'2021-06-01').displayName}', 120)
+    description: reference(policyResourceIdEnforceHttpsIngress, '2021-06-01').description
     policyDefinitionId: policyResourceIdEnforceHttpsIngress
     parameters: {
       excludedNamespaces: {
         value: []
       }
       effect: {
-        value: 'deny'
+        value: 'Deny'
       }
     }
   }
 }
 
-resource policyAssignmentNameEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceInternalLoadBalancers_var
+resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(policyResourceIdEnforceInternalLoadBalancers, resourceGroup().id, clusterName)
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceInternalLoadBalancers,'2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    displayName: take('[${clusterName}] ${reference(policyResourceIdEnforceInternalLoadBalancers,'2021-06-01').displayName}', 120)
+    description: reference(policyResourceIdEnforceInternalLoadBalancers, '2021-06-01').description
     policyDefinitionId: policyResourceIdEnforceInternalLoadBalancers
     parameters: {
       excludedNamespaces: {
         value: []
       }
       effect: {
-        value: 'deny'
+        value: 'Deny'
       }
     }
   }
 }
 
-resource policyAssignmentNameRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameRoRootFilesystem_var
+resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(policyResourceIdRoRootFilesystem, resourceGroup().name, clusterName)
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdRoRootFilesystem,'2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    displayName: take('[${clusterName}] ${reference(policyResourceIdRoRootFilesystem,'2021-06-01').displayName}', 120)
+    description: reference(policyResourceIdRoRootFilesystem, '2021-06-01').description
     policyDefinitionId: policyResourceIdRoRootFilesystem
     parameters: {
       excludedNamespaces: {
@@ -1583,17 +1468,18 @@ resource policyAssignmentNameRoRootFilesystem 'Microsoft.Authorization/policyAss
         ]
       }
       effect: {
-        value: 'audit'
+        value: 'Audit'
       }
     }
   }
 }
 
-resource policyAssignmentNameEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceResourceLimits_var
+resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(policyResourceIdEnforceResourceLimits, resourceGroup().id, clusterName)
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceResourceLimits,'2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    displayName: take('[${clusterName}] ${reference(policyResourceIdEnforceResourceLimits,'2021-06-01').displayName}', 120)
+    description: reference(policyResourceIdEnforceResourceLimits, '2021-06-01').description
     policyDefinitionId: policyResourceIdEnforceResourceLimits
     parameters: {
       cpuLimit: {
@@ -1612,21 +1498,26 @@ resource policyAssignmentNameEnforceResourceLimits 'Microsoft.Authorization/poli
         ]
       }
       effect: {
-        value: 'deny'
+        value: 'Deny'
       }
     }
   }
 }
 
-resource policyAssignmentNameEnforceImageSource 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceImageSource_var
+resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(
+    policyResourceIdEnforceImageSource,
+    resourceGroup().id,
+    clusterName
+  )
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceImageSource,'2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    displayName: take('[${clusterName}] ${reference(policyResourceIdEnforceImageSource,'2021-06-01').displayName}', 120)
+    description: reference(policyResourceIdEnforceImageSource, '2021-06-01').description
     policyDefinitionId: policyResourceIdEnforceImageSource
     parameters: {
       allowedContainerImagesRegex: {
-        value: '${containerRegistryName}\\.azurecr\\.io\\/.+$|mcr\\.microsoft\\.com\\/.+$'
+        value: '${acr.name}\\.azurecr\\.io\\/.+$|mcr\\.microsoft\\.com\\/.+$'
       }
       excludedNamespaces: {
         value: [
@@ -1637,8 +1528,316 @@ resource policyAssignmentNameEnforceImageSource 'Microsoft.Authorization/policyA
         ]
       }
       effect: {
-        value: 'deny'
+        value: 'Deny'
       }
+    }
+  }
+}
+
+resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
+  name: clusterName
+  location: location
+  properties: {
+    source: mc.id
+    topicType: 'Microsoft.ContainerService.ManagedClusters'
+  }
+}
+
+resource st_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: st
+  name: 'default'
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        category: 'DeliveryFailures'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
+resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2021-05-01' = {
+  name: 'waf-${clusterName}'
+  location: location
+  properties: {
+    policySettings: {
+      fileUploadLimitInMb: 10
+      state: 'Enabled'
+      mode: 'Prevention'
+    }
+    managedRules: {
+      managedRuleSets: [
+        {
+          ruleSetType: 'OWASP'
+          ruleSetVersion: '3.2'
+          ruleGroupOverrides: []
+        }
+        {
+          ruleSetType: 'Microsoft_BotManagerRuleSet'
+          ruleSetVersion: '1.0'
+          ruleGroupOverrides: []
+        }
+      ]
+    }
+  }
+}
+
+resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
+  name: agwName
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${miAppGatewayFrontend.id}': {}
+    }
+  }
+  zones: pickZones('Microsoft.Network', 'applicationGateways', location, 3)
+  properties: {
+    sku: {
+      name: 'WAF_v2'
+      tier: 'WAF_v2'
+    }
+    sslPolicy: {
+      policyType: 'Custom'
+      cipherSuites: [
+        'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384'
+        'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256'
+      ]
+      minProtocolVersion: 'TLSv1_2'
+    }
+    trustedRootCertificates: [
+      {
+        name: 'root-cert-wildcard-aks-ingress'
+        properties: {
+          keyVaultSecretId: kv::kvsAppGwIngressInternalAksIngressTls.properties.secretUri
+        }
+      }
+    ]
+    gatewayIPConfigurations: [
+      {
+        name: 'apw-ip-configuration'
+        properties: {
+          subnet: {
+            id: targetVirtualNetwork::snetApplicationGateway.id
+          }
+        }
+      }
+    ]
+    frontendIPConfigurations: [
+      {
+        name: 'apw-frontend-ip-configuration'
+        properties: {
+          publicIPAddress: {
+            id: resourceId(subscription().subscriptionId, targetResourceGroup.name, 'Microsoft.Network/publicIpAddresses', 'pip-${appId}')
+          }
+        }
+      }
+    ]
+    frontendPorts: [
+      {
+        name: 'port-443'
+        properties: {
+          port: 443
+        }
+      }
+    ]
+    autoscaleConfiguration: {
+      minCapacity: 0
+      maxCapacity: 10
+    }
+    firewallPolicy: {
+      id: wafPolicy.id
+    }
+    enableHttp2: false
+    sslCertificates: [
+      {
+        name: '${agwName}-ssl-certificate'
+        properties: {
+          keyVaultSecretId: kv::kvsGatewayExternalCert.properties.secretUri
+        }
+      }
+    ]
+    probes: [
+      {
+        name: 'probe-${aksBackendDomainName}'
+        properties: {
+          protocol: 'Https'
+          path: '/favicon.ico'
+          interval: 30
+          timeout: 30
+          unhealthyThreshold: 3
+          pickHostNameFromBackendHttpSettings: true
+          minServers: 0
+          match: {}
+        }
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: aksBackendDomainName
+        properties: {
+          backendAddresses: [
+            {
+              fqdn: aksBackendDomainName
+            }
+          ]
+        }
+      }
+    ]
+    backendHttpSettingsCollection: [
+      {
+        name: 'aks-ingress-backendpool-httpsettings'
+        properties: {
+          port: 443
+          protocol: 'Https'
+          cookieBasedAffinity: 'Disabled'
+          pickHostNameFromBackendAddress: true
+          requestTimeout: 20
+          probe: {
+            id: resourceId('Microsoft.Network/applicationGateways/probes', agwName, 'probe-${aksBackendDomainName}')
+          }
+          trustedRootCertificates: [
+            {
+              id: resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', agwName, 'root-cert-wildcard-aks-ingress')
+            }
+          ]
+        }
+      }
+    ]
+    httpListeners: [
+      {
+        name: 'listener-https'
+        properties: {
+          frontendIPConfiguration: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', agwName, 'apw-frontend-ip-configuration')
+          }
+          frontendPort: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', agwName, 'port-443')
+          }
+          protocol: 'Https'
+          sslCertificate: {
+            id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', agwName, '${agwName}-ssl-certificate')
+          }
+          hostName: '${reference(resourceId(subscription().subscriptionId,targetResourceGroup.name,'Microsoft.Network/publicIpAddresses','pip-${appId}'),'2020-07-01','Full').properties.dnsSettings.domainNameLabel}.${location}.cloudapp.azure.com'
+          hostNames: []
+          requireServerNameIndication: true
+        }
+      }
+    ]
+    requestRoutingRules: [
+      {
+        name: 'apw-routing-rules'
+        properties: {
+          ruleType: 'Basic'
+          priority: 1
+          httpListener: {
+            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', agwName, 'listener-https')
+          }
+          backendAddressPool: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', agwName, aksBackendDomainName)
+          }
+          backendHttpSettings: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', agwName, 'aks-ingress-backendpool-httpsettings')
+          }
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    peKv
+    kvMiAppGatewayFrontendKeyVaultReader_roleAssignment
+    kvMiAppGatewayFrontendSecretsUserRole_roleAssignment
+  ]
+}
+
+resource agw_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: agw
+  name: 'default'
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        category: 'ApplicationGatewayAccessLog'
+        enabled: true
+      }
+      {
+        category: 'ApplicationGatewayPerformanceLog'
+        enabled: true
+      }
+      {
+        category: 'ApplicationGatewayFirewallLog'
+        enabled: true
+      }
+    ]
+  }
+  dependsOn: []
+}
+
+module ensureClusterIdentityHasRbacToPullAcr './nested_EnsureClusterIdentityHasRbacToPullAcr.bicep' = {
+  name: 'EnsureClusterIdentityHasRbacToPullAcr'
+  scope: sharedResourceGroup
+  params: {
+    acrName: acr.name
+    clusterId: mc.id
+    kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
+  }
+}
+
+resource pdzAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.azurecr.io'
+  location: 'global'
+  properties: {}
+
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${targetVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+resource peAcr 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: 'pe-${acr.name}'
+  location: location
+  properties: {
+    subnet: {
+      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'to_${targetVirtualNetwork.name}'
+        properties: {
+          privateLinkServiceId: acr.id
+          groupIds: [
+            'registry'
+          ]
+        }
+      }
+    ]
+  }
+  
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-azurecr-io'
+          properties: {
+            privateDnsZoneId: pdzAcr.id
+          }
+        }
+      ]
     }
   }
 }
@@ -1646,6 +1845,6 @@ resource policyAssignmentNameEnforceImageSource 'Microsoft.Authorization/policyA
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
+output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
+output keyVaultName string = kv.name
 output agwName string = agwName
-output aksIngressControllerPodManagedIdentityClientId string = reference(podmi_ingress_controller.id, '2018-11-30').clientId
-output keyVaultName string = keyVaultName

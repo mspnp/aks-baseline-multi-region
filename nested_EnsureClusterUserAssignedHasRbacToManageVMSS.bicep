@@ -5,64 +5,23 @@ targetScope = 'resourceGroup'
 @description('The AKS Control Plane Principal Id to be given with Network Contributor Role in different spoke subnets, so it can join VMSS and load balancers resources to them.')
 @minLength(36)
 @maxLength(36)
-param miClusterControlPlanePrincipalId string
-
-@description('The regional network spoke VNet Resource name that the cluster is being joined to, so it can be used to discover subnets during role assignments.')
-@minLength(1)
-param targetVirtualNetworkName string
+param kubeletidentityObjectId string
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
-resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-  name: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+resource virtualMachineContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
   scope: subscription()
-}
-
-/*** EXISTING HUB RESOURCES ***/
-
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
-  name: targetVirtualNetworkName
-}
-
-resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  parent: targetVirtualNetwork
-  name: 'snet-clusternodes'
-}
-
-resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  parent: targetVirtualNetwork
-  name: 'snet-clusteringressservices'
 }
 
 /*** RESOURCES ***/
 
-resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  scope: snetClusterNodes
-  name: guid(snetClusterNodes.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
+// It is required to grant the AKS cluster with Virtual Machine Contributor role permissions over the cluster infrastructure resource group to work with Managed Identities.
+resource id 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, virtualMachineContributorRole.id)
   properties: {
-    roleDefinitionId: networkContributorRole.id
-    description: 'Allows cluster identity to join the nodepool vmss resources to this subnet.'
-    principalId: miClusterControlPlanePrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  scope: snetClusterIngress
-  name: guid(snetClusterIngress.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
-  properties: {
-    roleDefinitionId: networkContributorRole.id
-    description: 'Allows cluster identity to join load balancers (ingress resources) to this subnet.'
-    principalId: miClusterControlPlanePrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource rgClusterMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid(resourceGroup().id)
-  properties: {
-    roleDefinitionId: networkContributorRole.id
-    principalId: miClusterControlPlanePrincipalId
+    roleDefinitionId: virtualMachineContributorRole.id
+    principalId: kubeletidentityObjectId
     principalType: 'ServicePrincipal'
   }
 }
