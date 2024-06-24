@@ -62,7 +62,6 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (such as AKS-managed Internal Load Balancer, Azure Container Registry, Managed Identities, etc.)
         az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'User Access Administrator' --scope "/subscriptions/$(az account show --query 'id' -o tsv)"
-
         ```
 
     1. Create federated identity secrets in your GitHub repository.
