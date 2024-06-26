@@ -286,10 +286,13 @@ resource AllAzureAdvisorAlert 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
   }
 }
 
-@description('WAF policy for Front Door (classic).')
-resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2022-05-01' = {
+@description('WAF policy for Front Door (Premium).')
+resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2024-02-01' = {
   name: 'policyfd${subRgUniqueString}'
   location: 'global'
+  sku: {
+    name: 'Premium_AzureFrontDoor'
+  }
   properties: {
     policySettings: {
       enabledState: 'Enabled'
@@ -318,6 +321,30 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
   location: 'global'
   sku: {
     name: 'Premium_AzureFrontDoor'
+  }
+
+  resource secPolicies 'securityPolicies' ={
+    name: 'afd-sec-policies'
+    properties: {
+      parameters: {
+        type: 'WebApplicationFirewall'
+        wafPolicy: {
+          id: frontDoorWafPolicy.id
+        }
+        associations: [
+          {
+            domains: [
+              {
+                id: endpoint.id
+              }
+            ]
+            patternsToMatch: [
+              '/*'
+            ]
+          }
+        ]
+      }
+    }
   }
 
   resource endpoint 'afdEndpoints' = {
@@ -378,6 +405,25 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
         enabledState: 'Enabled'
       }
     }
+  }
+}
+
+@description('WAF policies logs for Azure Front Door (Premium).')
+resource afdWafPolicies_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: frontDoorProfile
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'FrontDoorWebApplicationFirewallLog'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: true
+        }
+      }
+    ]
   }
 }
 
