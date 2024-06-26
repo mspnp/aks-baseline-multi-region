@@ -524,12 +524,6 @@
                     "minCapacity": 0,
                     "maxCapacity": 10
                 },
-                "webApplicationFirewallConfiguration": {
-                    "enabled": true,
-                    "firewallMode": "Prevention",
-                    "ruleSetType": "OWASP",
-                    "ruleSetVersion": "3.0"
-                },
                 "enableHttp2": false,
                 "sslCertificates": [
                     {
