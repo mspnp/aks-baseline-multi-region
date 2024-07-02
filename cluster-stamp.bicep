@@ -180,6 +180,11 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   resource snetApplicationGateway 'subnets' existing = {
     name: 'snet-applicationgateway'
   }
+
+  // Spoke virtual network's subnet for the App Gw private link configuration 
+  resource snetPrivatelinkAppGw 'subnets' existing = {
+    name: 'snet-applicationgateway-privatelink'
+  }
 }
 
 resource pipPrimaryCluster 'Microsoft.Network/publicIpAddresses@2020-07-01' existing = {
@@ -1632,12 +1637,35 @@ resource agw 'Microsoft.Network/applicationGateways@2024-01-01' = {
         }
       }
     ]
+    privateLinkConfigurations: [
+      {
+        name: 'apw-privatelink-configuration'
+        properties: {
+          ipConfigurations: [
+            {
+              name: 'apw-privatelink-configuration-ip-configuration'
+              properties: {
+                primary: true
+                privateIPAllocationMethod: 'Dynamic'
+                subnet: {
+                  id: targetVirtualNetwork::snetPrivatelinkAppGw.id
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
     frontendIPConfigurations: [
       {
         name: 'apw-frontend-ip-configuration'
         properties: {
+          privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
             id: pipPrimaryCluster.id
+          }
+          privateLinkConfiguration: {
+            id: resourceId('Microsoft.Network/applicationGateways/privateLinkConfigurations', agwName, 'apw-privatelink-configuration')
           }
         }
       }
