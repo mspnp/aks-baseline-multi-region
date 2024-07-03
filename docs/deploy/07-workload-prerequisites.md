@@ -4,6 +4,23 @@ Now that the [AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
 
 ## Steps
 
+## Connect Azure Front Door to a private Appplication Gateway in Region 1 and Region 2 
+
+1. Get the application gateway names for regions 1 and 2.
+
+   ```bash
+   export APPGW_NAME_BU0001A0042_03_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   export APPGW_NAME_BU0001A0042_04_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   echo APPGW_NAME_BU0001A0042_03_AKS_MRB: $APPGW_NAME_BU0001A0042_03_AKS_MRB
+   echo APPGW_NAME_BU0001A0042_04_AKS_MRB: $APPGW_NAME_BU0001A0042_04_AKS_MRB
+   ```
+1. Apply shared resources v1.1 to request connecting Azure Front Door with private Application Gateway in regions 1 and 2:
+
+   ```bash
+   # [This takes about two minutes.]
+   az deployment group create -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -f shared-svcs-stamp.V1.1.bicep -p targetVnetResourceIdRegionA=$RESOURCEID_VNET_BU0001A0042_03 targetVnetResourceIdRegionB=$RESOURCEID_VNET_BU0001A0042_04 appGwResourceNameRegionA=$APPGW_NAME_BU0001A0042_03_AKS_MRB appGwResourceNameRegionB=$APPGW_NAME_BU0001A0042_04_AKS_MRB
+   ```
+
 ## Import the wildcard certificate for the AKS Ingress Controller to Azure Key Vault
 
 > :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
