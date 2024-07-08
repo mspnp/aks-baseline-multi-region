@@ -1,20 +1,16 @@
 targetScope = 'resourceGroup'
 
 /*** PARAMETERS ***/
-@description('The regional network spoke VNet Resource ID in Region 1')
-@minLength(79)
-param targetVnetResourceIdRegion1 string
+@description('The regional resource group name for Region 1')
+param resourceGroupNameRegion1 string
 
-@description('The regional network spoke VNet Resource ID in Region 2')
-@minLength(79)
-param targetVnetResourceIdRegion2 string
+@description('The regional resource group name for Region 2')
+param resourceGroupNameRegion2 string
 
 @description('The Application Gateway resource name in Region 1')
-@minLength(79)
 param appGwResourceNameRegion1 string
 
 @description('The Application Gateway resource name in Region 2')
-@minLength(79)
 param appGwResourceNameRegion2 string
 
 /*** VARIABLES ***/
@@ -27,13 +23,13 @@ var frontDoorName = 'bicycle${subRgUniqueString}'
 // Spoke resource group
 resource targetResourceGroupRegion1 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   scope: subscription()
-  name: last(split(targetVnetResourceIdRegion1, '/'))
+  name: resourceGroupNameRegion1
 }
 
 // Spoke resource group
 resource targetResourceGroupRegion2 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   scope: subscription()
-  name: last(split(targetVnetResourceIdRegion2, '/'))
+  name: resourceGroupNameRegion2
 }
 
 // Private Application Gateway in Region 1
@@ -120,7 +116,7 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
   }
 
   resource frontDoorOriginGroup 'originGroups' = {
-    name: 'afd-origingroup'
+    name: 'afd-origingroup-private'
     properties: {
       loadBalancingSettings: {
         sampleSize: 4
