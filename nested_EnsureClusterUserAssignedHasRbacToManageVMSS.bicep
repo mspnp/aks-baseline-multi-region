@@ -18,7 +18,7 @@ resource virtualMachineContributorRole 'Microsoft.Authorization/roleDefinitions@
 
 // It is required to grant the AKS cluster with Virtual Machine Contributor role permissions over the cluster infrastructure resource group to work with Managed Identities.
 resource id 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, virtualMachineContributorRole.id)
+  name: guid(resourceGroup().id, virtualMachineContributorRole.id, kubeletIdentityObjectId)
   properties: {
     roleDefinitionId: virtualMachineContributorRole.id
     principalId: kubeletIdentityObjectId
