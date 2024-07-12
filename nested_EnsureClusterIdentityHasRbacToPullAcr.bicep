@@ -32,7 +32,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existin
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: acr
-  name: guid(clusterId, acrPullRole.id)
+  name: guid(clusterId, acrPullRole.id, kubeletIdentityObjectId)
   properties: {
     roleDefinitionId: acrPullRole.id
     description: 'Allows AKS to pull container images from this ACR instance.'
