@@ -5,7 +5,7 @@ targetScope = 'resourceGroup'
 @description('The AKS Control Plane Principal Id to be given with Network Contributor Role in different spoke subnets, so it can join VMSS and load balancers resources to them.')
 @minLength(36)
 @maxLength(36)
-param kubeletidentityObjectId string
+param kubeletIdentityObjectId string
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
@@ -21,7 +21,7 @@ resource id 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(resourceGroup().id, virtualMachineContributorRole.id)
   properties: {
     roleDefinitionId: virtualMachineContributorRole.id
-    principalId: kubeletidentityObjectId
+    principalId: kubeletIdentityObjectId
     principalType: 'ServicePrincipal'
   }
 }
