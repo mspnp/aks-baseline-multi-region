@@ -11,7 +11,7 @@ param clusterId string
 @description('The AKS Managed Identity Id to be given with ACR Pull Role permissions, so it can pull images into the cluster.')
 @minLength(36)
 @maxLength(36)
-param kubeletidentityObjectId string
+param kubeletIdentityObjectId string
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
@@ -36,7 +36,7 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
   properties: {
     roleDefinitionId: acrPullRole.id
     description: 'Allows AKS to pull container images from this ACR instance.'
-    principalId: kubeletidentityObjectId
+    principalId: kubeletIdentityObjectId
     principalType: 'ServicePrincipal'
   }
 }
