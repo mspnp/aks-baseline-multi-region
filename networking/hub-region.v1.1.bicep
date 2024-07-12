@@ -447,7 +447,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
               fqdnTags: []
               webCategories: []
               targetFqdns: [
-                '*.hcp.eastus2.azmk8s.io'
+                '*.hcp.${location}.azmk8s.io'
               ]
               targetUrls: []
               terminateTLS: false
