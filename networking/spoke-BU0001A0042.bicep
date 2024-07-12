@@ -204,7 +204,7 @@ resource nsg_clusterVNetName_appgw 'Microsoft.Network/networkSecurityGroups@2020
       {
         name: 'AllowHealthProbesInBound'
         properties: {
-          description: 'Allow Azure Health Probes in. (https://learn.microsoft.com/azure/application-gateway/configuration-infrastructure#network-security-groups)'
+          description: 'Allow Azure Application Gateway Health Probes in. (https://learn.microsoft.com/azure/application-gateway/configuration-infrastructure#network-security-groups)'
           protocol: '*'
           sourcePortRange: '*'
           sourceAddressPrefix: 'AzureLoadBalancer'
