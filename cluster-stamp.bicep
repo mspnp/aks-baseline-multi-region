@@ -346,7 +346,6 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureCluste
   scope: targetResourceGroup
   params: {
     miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
-    clusterControlPlaneIdentityName: miClusterControlPlane.name
     targetVirtualNetworkName: targetVirtualNetwork.name
   }
 }

@@ -8,10 +8,6 @@ targetScope = 'resourceGroup'
 @maxLength(36)
 param miClusterControlPlanePrincipalId string
 
-@description('The AKS Control Plane Principal Name to be used to create unique role assignments names.')
-@minLength(3)
-@maxLength(128)
-param clusterControlPlaneIdentityName string
 @description('The regional network spoke VNet Resource name that the cluster is being joined to, so it can be used to discover subnets during role assignments.')
 @minLength(1)
 param targetVirtualNetworkName string
@@ -41,7 +37,7 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 
 resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: targetVirtualNetwork::snetClusterNodes
-  name: guid(targetVirtualNetwork::snetClusterNodes.id, networkContributorRole.id, clusterControlPlaneIdentityName)
+  name: guid(targetVirtualNetwork::snetClusterNodes.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
   properties: {
     roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join the nodepool vmss resources to this subnet.'
@@ -52,7 +48,7 @@ resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignm
 
 resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: targetVirtualNetwork::snetClusterIngress
-  name: guid(targetVirtualNetwork::snetClusterIngress.id, networkContributorRole.id, clusterControlPlaneIdentityName)
+  name: guid(targetVirtualNetwork::snetClusterIngress.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
   properties: {
     roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join load balancers (ingress resources) to this subnet.'
