@@ -5,7 +5,7 @@ targetScope = 'resourceGroup'
 @description('Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall')
 param nodepoolSubnetResourceIds array
 
-@description('The hub\'s regional affinity. All resources tied to this hub will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support.')
+@description('The hub\'s regional affinity. All resources tied to this hub will also be homed in this region.  The network team maintains this approved regional list which is a subset of regions with Availability Zone support.')
 @allowed([
   'australiaeast'
   'canadacentral'
