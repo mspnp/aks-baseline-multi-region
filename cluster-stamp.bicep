@@ -164,17 +164,17 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   scope: targetResourceGroup
   name: last(split(targetVnetResourceId, '/'))
 
-  // Spoke virutual network's subnet for the cluster nodes
+  // Spoke virtual network's subnet for the cluster nodes
   resource snetClusterNodes 'subnets' existing = {
     name: 'snet-clusternodes'
   }
 
-  // Spoke virutual network's subnet for the internal load balancers
+  // Spoke virtual network's subnet for the internal load balancers
   resource snetPrivatelinkendpoints 'subnets' existing = {
     name: 'snet-clusteringressservices'
   }
 
-  // Spoke virutual network's subnet for application gateway
+  // Spoke virtual network's subnet for application gateway
   resource snetApplicationGateway 'subnets' existing = {
     name: 'snet-applicationgateway'
   }
