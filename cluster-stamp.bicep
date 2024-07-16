@@ -182,6 +182,11 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   }
 }
 
+resource pipPrimaryCluster 'Microsoft.Network/publicIpAddresses@2020-07-01' existing = {
+  scope: targetResourceGroup
+  name: 'pip-${appId}'
+}
+
 /*** RESOURCES ***/
 
 // The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
@@ -1636,7 +1641,7 @@ resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
         name: 'apw-frontend-ip-configuration'
         properties: {
           publicIPAddress: {
-            id: resourceId(subscription().subscriptionId, targetResourceGroup.name, 'Microsoft.Network/publicIpAddresses', 'pip-${appId}')
+            id: pipPrimaryCluster.id
           }
         }
       }
@@ -1726,7 +1731,7 @@ resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
           sslCertificate: {
             id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', agwName, '${agwName}-ssl-certificate')
           }
-          hostName: '${reference(resourceId(subscription().subscriptionId,targetResourceGroup.name,'Microsoft.Network/publicIpAddresses','pip-${appId}'),'2020-07-01','Full').properties.dnsSettings.domainNameLabel}.${location}.cloudapp.azure.com'
+          hostName: '${pipPrimaryCluster.properties.dnsSettings.domainNameLabel}.${location}.cloudapp.azure.com'
           hostNames: []
           requireServerNameIndication: true
         }
