@@ -117,7 +117,7 @@ resource routeTable 'Microsoft.Network/routeTables@2020-07-01' = {
   }
 }
 
-resource nsg_clusterVNetName_nodepools 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
   name: 'nsg-${clusterVNetName}-nodepools'
   location: location
   properties: {
@@ -125,8 +125,9 @@ resource nsg_clusterVNetName_nodepools 'Microsoft.Network/networkSecurityGroups@
   }
 }
 
-resource nsg_clusterVNetName_nodepools_Microsoft_Insights_toHub 'Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: 'nsg-${clusterVNetName}-nodepools/Microsoft.Insights/toHub'
+resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: nsgNodepoolSubnet
   properties: {
     workspaceId: hubLaWorkspaceResourceId
     logs: [
@@ -140,12 +141,9 @@ resource nsg_clusterVNetName_nodepools_Microsoft_Insights_toHub 'Microsoft.Netwo
       }
     ]
   }
-  dependsOn: [
-    nsg_clusterVNetName_nodepools
-  ]
 }
 
-resource nsg_clusterVNetName_aksilbs 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgInternalLoadBalancerSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
   name: 'nsg-${clusterVNetName}-aksilbs'
   location: location
   properties: {
@@ -153,8 +151,9 @@ resource nsg_clusterVNetName_aksilbs 'Microsoft.Network/networkSecurityGroups@20
   }
 }
 
-resource nsg_clusterVNetName_aksilbs_Microsoft_Insights_toHub 'Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: 'nsg-${clusterVNetName}-aksilbs/Microsoft.Insights/toHub'
+resource nsgInternalLoadBalancerSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: nsgInternalLoadBalancerSubnet
   properties: {
     workspaceId: hubLaWorkspaceResourceId
     logs: [
@@ -168,12 +167,9 @@ resource nsg_clusterVNetName_aksilbs_Microsoft_Insights_toHub 'Microsoft.Network
       }
     ]
   }
-  dependsOn: [
-    nsg_clusterVNetName_aksilbs
-  ]
 }
 
-resource nsg_clusterVNetName_appgw 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
   name: 'nsg-${clusterVNetName}-appgw'
   location: location
   properties: {
@@ -250,8 +246,9 @@ resource nsg_clusterVNetName_appgw 'Microsoft.Network/networkSecurityGroups@2020
   }
 }
 
-resource nsg_clusterVNetName_appgw_Microsoft_Insights_toHub 'Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: 'nsg-${clusterVNetName}-appgw/Microsoft.Insights/toHub'
+resource nsgAppGwSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: nsgAppGwSubnet
   properties: {
     workspaceId: hubLaWorkspaceResourceId
     logs: [
@@ -265,9 +262,6 @@ resource nsg_clusterVNetName_appgw_Microsoft_Insights_toHub 'Microsoft.Network/n
       }
     ]
   }
-  dependsOn: [
-    nsg_clusterVNetName_appgw
-  ]
 }
 
 resource vnetSpoke 'Microsoft.Network/virtualNetworks@2020-07-01' = {
@@ -288,7 +282,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2020-07-01' = {
             id: routeTable.id
           }
           networkSecurityGroup: {
-            id: nsg_clusterVNetName_nodepools.id
+            id: nsgNodepoolSubnet.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
@@ -302,7 +296,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2020-07-01' = {
             id: routeTable.id
           }
           networkSecurityGroup: {
-            id: nsg_clusterVNetName_aksilbs.id
+            id: nsgInternalLoadBalancerSubnet.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Disabled'
@@ -313,7 +307,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2020-07-01' = {
         properties: {
           addressPrefix: applicationGatewaySubnetAddressPrefix
           networkSecurityGroup: {
-            id: nsg_clusterVNetName_appgw.id
+            id: nsgAppGwSubnet.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Disabled'
@@ -323,8 +317,9 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2020-07-01' = {
   }
 }
 
-resource clusterVNetName_Microsoft_Insights_toHub 'Microsoft.Network/virtualNetworks/providers/diagnosticSettings@2017-05-01-preview' = {
-  name: '${clusterVNetName}/Microsoft.Insights/toHub'
+resource vnetSpoke_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: vnetSpoke
   properties: {
     workspaceId: hubLaWorkspaceResourceId
     metrics: [
@@ -334,9 +329,6 @@ resource clusterVNetName_Microsoft_Insights_toHub 'Microsoft.Network/virtualNetw
       }
     ]
   }
-  dependsOn: [
-    vnetSpoke
-  ]
 }
 
 // Peer to regional hub
@@ -385,7 +377,7 @@ module flowLogsNsgSpoke './virtualNetworkFlowlogs.bicep' = if (deployFlowLogReso
   name: 'nsgSpokeFlowlogs'
   scope: resourceGroup('networkWatcherRG')
   params: {
-    nsgId: nsg_clusterVNetName_nodepools.id
+    nsgId: nsgNodepoolSubnet.id
     flowlogStorageAccountId: sharedStorageAccount.id
     laId: hubLa.id
     location: location
