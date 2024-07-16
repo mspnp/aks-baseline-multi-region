@@ -58,7 +58,6 @@ var routeTableName = 'route-to-${location}-hub-fw'
 var hubRgName = split(hubVnetResourceId, '/')[4]
 var hubNetworkName = split(hubVnetResourceId, '/')[8]
 
-var hubFwResourceId = resourceId(hubRgName, 'Microsoft.Network/azureFirewalls', 'fw-${location}')
 var hubLaWorkspaceName = 'la-hub-${location}-${uniqueString(hubVnetResourceId)}'
 var hubLaWorkspaceResourceId = resourceId(hubRgName, 'Microsoft.OperationalInsights/workspaces', hubLaWorkspaceName)
 var toHubPeeringName = 'spoke-to-${hubNetworkName}'
@@ -93,6 +92,12 @@ resource hubLa 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = 
   name: hubLaWorkspaceName
 }
 
+@description('The regional Azure Firewall that all regional spoke networks can egress through.')
+resource hubFirewall 'Microsoft.Network/azureFirewalls@2023-11-01' existing = {
+  scope: hubResourceGroup
+  name: 'fw-${location}'
+}
+
 /*** RESOURCES ***/
 
 resource routeTable 'Microsoft.Network/routeTables@2020-07-01' = {
@@ -105,7 +110,7 @@ resource routeTable 'Microsoft.Network/routeTables@2020-07-01' = {
         properties: {
           nextHopType: 'VirtualAppliance'
           addressPrefix: '0.0.0.0/0'
-          nextHopIpAddress: reference(hubFwResourceId, '2020-05-01').ipConfigurations[0].properties.privateIpAddress
+          nextHopIpAddress: hubFirewall.properties.ipConfigurations[0].properties.privateIPAddress
         }
       }
     ]
