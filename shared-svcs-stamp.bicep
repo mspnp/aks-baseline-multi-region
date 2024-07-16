@@ -312,7 +312,7 @@ resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPo
   }
 }
 
-@description('Front Door Profile (Premium) to be our global router.')
+@description('Front Door Profile (Premium) to be our global router. We use the premium SKU for its support of Private Link and managed WAF rules.')
 resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
   name: 'afd-profile'
   location: 'global'
