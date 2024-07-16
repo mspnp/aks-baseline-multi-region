@@ -306,7 +306,7 @@ resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPo
       managedRuleSets: [
         {
           ruleSetType: 'DefaultRuleSet'
-          ruleSetVersion: '1.0'
+          ruleSetVersion: '2.1'
           ruleGroupOverrides: []
           exclusions: []
         }
