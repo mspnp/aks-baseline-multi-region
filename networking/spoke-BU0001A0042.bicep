@@ -422,9 +422,9 @@ module flowLogsNsgAppgw './virtualNetworkFlowlogs.bicep' = if (deployFlowLogReso
 
 /*** OUTPUTS ***/
 
-output clusterVnetResourceId string = vnetSpoke.id
+output clusterSpokeVnetName string = vnetSpoke.name
 output nodepoolSubnetResourceIds array = [
-  resourceId('Microsoft.Network/virtualNetworks/subnets', clusterVNetName, 'snet-clusternodes')
+  resourceId('Microsoft.Network/virtualNetworks/subnets', vnetSpoke.name, 'snet-clusternodes')
 ]
 output appGwFqdn string = primaryClusterPip.properties.dnsSettings.fqdn
 output subdomainName string = subdomainName

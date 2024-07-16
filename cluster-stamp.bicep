@@ -18,9 +18,11 @@ param appInstanceId string
 @description('The AKS cluster Internal Load Balancer IP Address')
 param clusterInternalLoadBalancerIpAddress string
 
-@description('The regional network spoke VNet Resource ID that the cluster will be joined to')
-@minLength(79)
-param targetVnetResourceId string
+@description('The regional network spoke VNet resource group name')
+param targetVnetResourceGroupName string
+
+@description('The regional network spoke VNet name that the cluster will be joined to')
+param targetVnetName string
 
 @description('Microsoft Entra group in the identified tenant that will be granted the highly privileged cluster-admin role.')
 param clusterAdminEntraGroupObjectId string
@@ -156,13 +158,13 @@ resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' exist
 // Spoke resource group
 resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   scope: subscription()
-  name: split(targetVnetResourceId, '/')[4]
+  name: targetVnetResourceGroupName
 }
 
 // Spoke virtual network
 resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: targetResourceGroup
-  name: last(split(targetVnetResourceId, '/'))
+  name: targetVnetName
 
   // Spoke virtual network's subnet for the cluster nodes
   resource snetClusterNodes 'subnets' existing = {
@@ -424,7 +426,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
     location: 'global'
     properties: {
       virtualNetwork: {
-        id: targetVnetResourceId
+        id: targetVirtualNetwork.id
       }
       registrationEnabled: false
     }
