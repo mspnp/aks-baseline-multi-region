@@ -5,8 +5,11 @@
     "location": {
       "value": "centralus"
     },
-    "targetVnetResourceId": {
-      "value": "<cluster-spoke-vnet-resource-id>"
+    "targetVnetResourceGroupName": {
+      "value": "<cluster-spoke-vnet-resource-group-name>"
+    },
+    "targetVnetName": {
+      "value": "<cluster-spoke-vnet-name>"
     },
     "appInstanceId": {
       "value": "04"

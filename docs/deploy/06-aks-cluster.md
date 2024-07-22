@@ -44,10 +44,10 @@ Following these steps will result in the provisioning of the AKS multicluster so
     > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
 
     ```bash
-    RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
-    RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
-    echo RESOURCEID_VNET_BU0001A0042_03: $RESOURCEID_VNET_BU0001A0042_03
-    echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04
+    CLUSTER_SPOKE_VNET_NAME_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterSpokeVnetName.value -o tsv)
+    CLUSTER_SPOKE_VNET_NAME_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterSpokeVnetName.value -o tsv)
+    echo CLUSTER_SPOKE_VNET_NAME_BU0001A0042_03: $CLUSTER_SPOKE_VNET_NAME_BU0001A0042_03
+    echo CLUSTER_SPOKE_VNET_NAME_BU0001A0042_04: $CLUSTER_SPOKE_VNET_NAME_BU0001A0042_04
     ```
 
     1. Assign required permissions to the [GitHub workflow's](https://learn.microsoft.com/azure/developer/github/connect-from-azure) managed (federated) identity.
@@ -62,7 +62,6 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (such as AKS-managed Internal Load Balancer, Azure Container Registry, Managed Identities, etc.)
         az role assignment create --assignee $GITHUB_FEDERATED_IDENTITY_PRINCIPALID --role 'User Access Administrator' --scope "/subscriptions/$(az account show --query 'id' -o tsv)"
-
         ```
 
     1. Create federated identity secrets in your GitHub repository.
@@ -104,8 +103,8 @@ Following these steps will result in the provisioning of the AKS multicluster so
         Verify all variables are populated:
 
         ```bash
-        echo RESOURCEID_VNET_BU0001A0042_03: $RESOURCEID_VNET_BU0001A0042_03 && \
-        echo RESOURCEID_VNET_BU0001A0042_04: $RESOURCEID_VNET_BU0001A0042_04 && \
+        echo CLUSTER_SPOKE_VNET_NAME_BU0001A0042_03: $CLUSTER_SPOKE_VNET_NAME_BU0001A0042_03 && \
+        echo CLUSTER_SPOKE_VNET_NAME_BU0001A0042_04: $CLUSTER_SPOKE_VNET_NAME_BU0001A0042_04 && \
         echo TENANTID_K8SRBAC_AKS_MRB: $TENANTID_K8SRBAC_AKS_MRB && \
         echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB && \
         echo OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB: $OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB && \
@@ -118,7 +117,8 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
         ```bash
         # Region 1
-        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<cluster-spoke-vnet-resource-group-name>#rg-enterprise-networking-spokes#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<cluster-spoke-vnet-name>#${CLUSTER_SPOKE_VNET_NAME_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${OBJECTID_GROUP_CLUSTERADMIN_BU0001A004203_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.eastus2.json && \
@@ -126,7 +126,8 @@ Following these steps will result in the provisioning of the AKS multicluster so
         sed -i "s#<your-github-org>#${GITHUB_USERNAME_AKS_MRB}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
-        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<cluster-spoke-vnet-resource-group-name>#rg-enterprise-networking-spokes#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<cluster-spoke-vnet-name>#${CLUSTER_SPOKE_VNET_NAME_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<azure-ad-aks-admin-group-object-id>#${OBJECTID_GROUP_CLUSTERADMIN_BU0001A004204_AKS_MRB}#g" ./azuredeploy.parameters.centralus.json && \
         sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
