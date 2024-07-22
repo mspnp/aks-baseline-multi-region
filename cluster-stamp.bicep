@@ -762,7 +762,7 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
   scope: mc
   name: 'bootstrap'
   properties: {
-    scope: 'mc'
+    scope: 'cluster'
     namespace: 'flux-system'
     sourceKind: 'GitRepository'
     gitRepository: {
