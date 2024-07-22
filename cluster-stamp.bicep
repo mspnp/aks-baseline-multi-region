@@ -799,7 +799,7 @@ module ndEnsureClusterUserAssignedHasRbacToManageVMSS './nested_EnsureClusterUse
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: nodeResourceGroup
   params: {
-    kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
+    kubeletIdentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
   }
 }
 
@@ -1792,7 +1792,7 @@ module ensureClusterIdentityHasRbacToPullAcr './nested_EnsureClusterIdentityHasR
   params: {
     acrName: acr.name
     clusterId: mc.id
-    kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
+    kubeletIdentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
   }
 }
 
