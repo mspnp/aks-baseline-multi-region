@@ -117,7 +117,7 @@ resource routeTable 'Microsoft.Network/routeTables@2020-07-01' = {
   }
 }
 
-resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
   name: 'nsg-${clusterVNetName}-nodepools'
   location: location
   properties: {
@@ -143,7 +143,7 @@ resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSet
   }
 }
 
-resource nsgInternalLoadBalancerSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgInternalLoadBalancerSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
   name: 'nsg-${clusterVNetName}-aksilbs'
   location: location
   properties: {
@@ -169,7 +169,7 @@ resource nsgInternalLoadBalancerSubnet_diagnosticSettings 'Microsoft.Insights/di
   }
 }
 
-resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
+resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
   name: 'nsg-${clusterVNetName}-appgw'
   location: location
   properties: {
