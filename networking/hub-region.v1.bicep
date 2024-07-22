@@ -339,7 +339,7 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
   }
 }]
 
-resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
+resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
   name: 'fw-policies-${location}'
   location: firewallPolicyLocation
   properties: {
@@ -359,7 +359,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
     }
   }
 
-  resource defaultDnaRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {
+  resource defaultDnaRuleCollectionGroup 'ruleCollectionGroups' = {
     name: 'DefaultDnatRuleCollectionGroup'
     properties: {
       priority: 100
@@ -367,7 +367,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
     }
   }
 
-  resource defaultNetworkRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {  
+  resource defaultNetworkRuleCollectionGroup 'ruleCollectionGroups' = {  
     name: 'DefaultNetworkRuleCollectionGroup'
     properties: {
       priority: 200
@@ -378,7 +378,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2020-11-01' = {
     ]
   }
 
-  resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups@2023-11-01' = {
+  resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups' = {
     name: 'DefaultApplicationRuleCollectionGroup'
     properties: {
       priority: 300
