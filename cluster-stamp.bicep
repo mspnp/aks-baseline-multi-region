@@ -732,7 +732,7 @@ resource mc_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
   scope: mc
-  name: 'mcFlux_extension'
+  name: 'flux'
   properties: {
     extensionType: 'microsoft.flux'
     autoUpgradeMinorVersion: true
