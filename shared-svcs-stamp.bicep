@@ -318,7 +318,7 @@ resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPo
 
 @description('Front Door Profile (Premium) to be our global router. We use the premium SKU for its support of Private Link and managed WAF rules.')
 resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
-  name: 'afd-profile'
+  name: frontDoorName
   location: 'global'
   sku: {
     name: 'Premium_AzureFrontDoor'
@@ -398,7 +398,7 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
       name: 'afd-origin'
       properties: {
         hostName: 'bicycle.cloudapp.azure.com'
-        originHostHeader: 'bicycle.cloudapp.azure.com'        
+        originHostHeader: 'bicycle.cloudapp.azure.com'
         httpPort: 80
         httpsPort: 443
         priority: 1
@@ -452,7 +452,7 @@ output containerRegistryId string = commonAcr.id
 output containerRegistryName string = commonAcr.name
 output fqdn string = frontDoorProfile::endpoint.properties.hostName
 output frontDoorName string = frontDoorProfile.name
-output frontDoorBackendPoolName string = 'MultiClusterBackendPool'
+output frontDoorOriginGroupName string = frontDoorProfile::frontDoorOriginGroup.name
 output baseFirewallPoliciesId string = fwPoliciesBase.id
 output githubFederatedIdentityClientId string = ghActionFederatedIdentity.properties.clientId
 output githubFederatedIdentityPrincipalId string = ghActionFederatedIdentity.properties.principalId
