@@ -104,6 +104,23 @@ jobs:
           SHARED_RESOURCE_GROUP_NAME=##SHARED_RESOURCE_GROUP_NAME_AKS_MRB##
           APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
           FRONT_DOOR_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorName.value -o tsv)
-          FRONT_DOOR_ENDPOINT_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorEndpointName.value -o tsv)
-          az cdn origin create -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --endpoint-name $FRONT_DOOR_ENDPOINT_NAME -n afd-origin-region2 --host-name $APPGW_FQDN_BU0001A0042_04 --origin-host-header $APPGW_FQDN_BU0001A0042_04 --http-port 80 --https-port 443 --priority 1 --weight 50
+          FRONT_DOOR_ORIGIN_GROUP_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorOriginGroupName.value -o tsv)
+          az afd origin create -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin-region2 --host-name $APPGW_FQDN_BU0001A0042_04 --origin-host-header $APPGW_FQDN_BU0001A0042_04 --http-port 80 --https-port 443 --priority 1 --weight 50
         azcliversion: 2.58.0
+
+    - name: Azure CLI - Delete Origin placeholder in Azure Front Door
+      id: delete-afd-mocked-origin
+      if: success() && env.DEPLOY_REGION1 == 'true' && env.DEPLOY_REGION2 == 'true'
+      uses: Azure/cli@v2
+      with:
+        inlineScript: |
+          az extension add --upgrade -n front-door
+          SHARED_RESOURCE_GROUP_NAME=##SHARED_RESOURCE_GROUP_NAME_AKS_MRB##
+          APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
+          FRONT_DOOR_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorName.value -o tsv)
+          FRONT_DOOR_ORIGIN_GROUP_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorOriginGroupName.value -o tsv)
+          az afd origin delete -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin
+        azcliversion: 2.58.0
+
+
+  
