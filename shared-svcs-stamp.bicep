@@ -359,7 +359,7 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
     resource frontDoorRoute 'routes' = {
       name: '${frontDoorName}-route'
       dependsOn: [
-        frontDoorOriginGroup::frontDoorOrigin
+        frontDoorOriginGroup::frontDoorOrigin // This explicit dependency is required to ensure that the origin group is not empty when the route is created.
       ]
       properties: {
         originGroup: {
