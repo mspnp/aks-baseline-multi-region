@@ -1,30 +1,32 @@
 # Azure Kubernetes Service (AKS) for multiregion deployment
 
-This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new *recommended infrastructure options* for a multicluster (and multiregion) architecture. This implementation and document are meant to guide the multiple distinct teams introduced in the [AKS baseline](https://github.com/mspnp/aks-baseline) through the process of expanding from a single cluster to a multicluster solution with a fundamental driver in mind which is **Reliability** via the [Geode cloud design pattern](https://learn.microsoft.com/azure/architecture/patterns/geodes).
+This reference implementation reviews some design decisions from the baseline, and incorporates new *recommended infrastructure options* for a multicluster (and multiregion) architecture. This implementation and document are meant to guide the multiple distinct teams introduced in the [AKS baseline](https://github.com/mspnp/aks-baseline) through the process of expanding from a single cluster to a multicluster solution. The fundamental driver for this reference architecture is **Reliability**, and it uses the [Geode cloud design pattern](https://learn.microsoft.com/azure/architecture/patterns/geodes).
 
-> Note: This implementation does not use [AKS Fleet Manager capability](https://learn.microsoft.com/azure/kubernetes-fleet/) or any other cluster clustering technologies, but instead represents a manual approach to clustering multiple AKS clusters together. Operating fleets containing a large number of clusters is usually best performed with advanced and dedicated tooling. This implementation supports a small scale and introduces some of the core concepts that will be necessary no matter the scale or tooling.
+> Note: This implementation does not use [AKS Fleet Manager capability](https://learn.microsoft.com/azure/kubernetes-fleet/) or any other automated cross-cluster management technologies, but instead represents a manual approach to combining multiple AKS clusters together. Operating fleets containing a large number of clusters is usually best performed with advanced and dedicated tooling. This implementation supports a small scale and introduces some of the core concepts that will be necessary regardless of your scale or tooling choices.
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional, small, and fast-growing startup that provides online web services to its clientele on the east coast of the United States. This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
 | 🎓 Foundational Understanding                                                                                                                                                                                                                                                                                                                                                                                                           |
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **If you haven't familiarized yourself with the general-purpose [AKS baseline cluster](https://github.com/mspnp/aks-baseline) architecture, you should start there before continuing here.** The architecture rationalized and constructed in that implementation is the direct foundation of this body of work. This reference implementation avoids rearticulating points that are already addressed in the AKS baseline cluster. |
+| **If you haven't familiarized yourself with the general-purpose [AKS baseline cluster](https://github.com/mspnp/aks-baseline) architecture, you should start there before continuing here.** The architecture rationalized and constructed in that implementation is the direct foundation of this body of work. This reference implementation avoids rearticulating points that are already addressed in the AKS baseline cluster, and we assume you've already read it before reading the guidance in this architecture. |
 
-The Contoso Bicycle app team that owns the `a0042` workload app is planning to deploy an AKS cluster strategically located in the `East US 2` region as this is where most of their customer base can be found. They will operate this single AKS cluster [following Microsoft's recommended baseline architecture](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/baseline-aks).
+The Contoso Bicycle app team that owns the `a0042` workload app has deployed an AKS cluster strategically located in the East US 2 region, because this is where most of their customer base can be found. They have operated this single AKS cluster [following Microsoft's recommended baseline architecture](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/baseline-aks). They followed the guidance that AKS baseline clusters should be deployed across multiple *availability zones* within the same region.
 
-AKS baseline clusters are meant to be available from multiple *availability zones* within the same region. But now they realize that if `East US 2` went fully down, zone coverage is not sufficient. Even though the SLAs are acceptable for their business continuity plan, they are starting to think what their options are, and how their stateless application (Application ID: a0042) could increase its availability in case of a complete regional outage. They started conversations with the business unit (BU0001) to increment the number of clusters by one. In other words, they are proposing to move to a multicluster infrastructure solution in which multiple instances of the same application could live.
+However, now they realize that if the East US 2 region went fully down, availability zone coverage is not sufficient. Even though the SLAs are acceptable for their business continuity plan, they are starting to reconsider their options, and how their stateless application (Application ID: a0042) could increase its availability in case of a complete regional outage.
 
-This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about following the baseline twice, adding another the region to get a twin infrastructure. They also need to look for how they can efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy to; and many more considerations striving for higher availability.
+They started conversations with the business unit (BU0001) to increment the number of clusters by one. In other words, they are proposing to move to a multicluster infrastructure solution in which multiple instances of the same application could live in different Azure regions.
+
+This architectural decision has multiple implications for the Contoso Bicycle organization. It isn't just about following the baseline twice, or adding another the region to get a twin infrastructure. They need to look for how they can efficiently share some of their Azure resources, as well as detect those that need to be added. They also need to consider how to deploy more than one cluster as well as operate them, and which specific regions they deploy to. There are many other factors that they need to consider while striving for higher availability.
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for an AKS multicluster solution designed to be deployed in multiple regions to be highly available. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) baseline for multiregion clusterss](https://aka.ms/architecture/aks-baseline-multi-region). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion article that describes some of the challenges, design patterns, and best practices for an AKS multi-region solution designed for high availability. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) baseline for multiregion clusters](https://aka.ms/architecture/aks-baseline-multi-region). If you haven't already reviewed it, we suggest you read it. It gives context to the considerations applied in this implementation. Ultimately, this implementation is the direct implementation of that specific architectural guidance.
 
 ## Architecture
 
-**This architecture is infrastructure focused**, more so than on workload. It concentrates on two AKS clusters, including concerns like multiregion deployments, the desired state/bootstrapping of the clusters, geo-replication, network topologies, and more.
+**This architecture is infrastructure focused**, more so than on workload. It concentrates on two AKS clusters, including concerns like multiregion deployments, the desired state and bootstrapping of the clusters, geo-replication, network topologies, and more.
 
-The implementation presented here, like in the baseline, is the *minimum recommended starting (baseline) for a multiple AKS cluster solution*. This implementation integrates with Azure services that will deliver geo-replication, a centralized observability approach, a network topology that is going go with multiregional growth, and an added benefit of additional traffic balancing as well.
+The implementation presented here, like in the baseline, is the *minimum recommended starting (baseline) for a multi-cluster AKS solution*. This implementation integrates with Azure services that deliver geo-replication, a centralized observability approach, a network topology that supports multiregional growth, and traffic balancing.
 
 Finally, this implementation uses the [ASP.NET Docker samples](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the multicluster infrastructure.
 
@@ -33,9 +35,9 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 #### Azure platform
 
 - Azure Kubernetes Service (AKS) v1.29
-- Azure Virtual Networks (hub-spoke)
+- Azure virtual networks (hub-spoke)
 - Azure Front Door (classic)
-- Azure Application Gateway (WAF)
+- Azure Application Gateway with web application firewall (WAF)
 - Azure Container Registry
 - Azure Monitor Log Analytics
 
@@ -65,24 +67,26 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-- [ ] [Cleanup all resources](./docs/deploy/11-cleanup.md)
+- [ ] [Clean up all resources](./docs/deploy/11-cleanup.md)
 
-## Cost Considerations
+## Cost considerations
 
 The main costs of this reference implementation are (in order):
 
-1. Azure Firewall dedicated to control outbound traffic - ~35%
-1. Node pool virtual machines used inside the cluster - ~30%
-1. Application Gateway which controls the ingress traffic to the workload - ~15%
-1. Log Analytics - ~10%
+| Component | Approximate cost |
+|-|-|
+| Azure Firewall dedicated to control outbound traffic | ~35% |
+| Node pool virtual machines used inside the cluster | ~30% |
+| Application Gateway which controls the ingress traffic to the workload | ~15% |
+| Log Analytics | ~10% |
 
 Azure Firewall can be a shared resource, and maybe your company already has one and you can reuse in existing regional hubs.
 
-The virtual machines on the AKS cluster are needed. The cluster can be shared by several applications. You can analyze the size and the amount of nodes. The reference implementation has the minimum recommended nodes for production environments, but in a multicluster environment when you have at least two clusters, based on your traffic analysis, failover strategy and autoscaling configuration, you will choose a scale appropriate to your workload.
+The virtual machines are used to host the nodes for the AKS cluster. The cluster can be shared by several applications. You can analyze the size and the number of nodes. The reference implementation has the minimum recommended nodes for production environments. In a multicluster environment, you have at least two clusters and should choose a scale appropriate to your workload. You should perform traffic analysis and consider your failover strategy and autoscaling configuration when planning your virtual machine scaling strategy.
 
-Keep an eye on Log Analytics data growth as time goes by and manage the information which is collected. The main cost is related to data ingestion into the Log Analytics workspace, you can fine tune that.
+Keep an eye on Log Analytics data growth as time goes by and manage the information that it collects. The main cost is related to data ingestion into the Log Analytics workspace, and you can fine tune the data ingestion to remove low-value data.
 
-There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost, you can disable these rules. The consequence is that not valid traffic will arrive at Application Gateway using resources instead of being eliminated as soon as possible.
+There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost. You can disable these rules if you decide you don't need them. However, the consequence is that potentially malicious traffic will arrive at Application Gateway and into your cluster. Such requests can use resources instead of being eliminated as quickly as possible.
 
 ## Next Steps
 
