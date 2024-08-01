@@ -88,7 +88,7 @@ Keep an eye on Log Analytics data growth as time goes by and manage the informat
 
 There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost. You can disable these rules if you decide you don't need them. However, the consequence is that potentially malicious traffic will arrive at Application Gateway and into your cluster. Such requests can use resources instead of being eliminated as quickly as possible.
 
-## Next Steps
+## Next steps
 
 This reference implementation intentionally does not cover all scenarios. If you are looking for other topics that are not addressed here, visit [AKS baseline for the complete list of covered scenarios around AKS](https://github.com/mspnp/aks-baseline#advanced-topics).
 
