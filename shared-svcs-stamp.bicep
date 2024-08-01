@@ -373,7 +373,6 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
         ]
         forwardingProtocol: 'HttpsOnly'
         linkToDefaultDomain: 'Enabled'
-        httpsRedirect: 'Enabled'
         enabledState: 'Enabled'
       }
     }
