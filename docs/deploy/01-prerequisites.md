@@ -22,27 +22,27 @@ This is the starting point for the instructions on deploying the [AKS baseline m
    > - Microsoft Entra [User Administrator](https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference#user-administrator-permissions) is *required* to create a "break glass" AKS admin Microsoft Entra security group and user. Alternatively, you could get your Microsoft Entra admin to create this for you when instructed to do so.
    >   - If you are not part of the User Administrator group in the tenant associated to your Azure subscription, consider [creating a new tenant](https://learn.microsoft.com/entra/fundamentals/create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation. The Microsoft Entra tenant backing your cluster's API RBAC does NOT need to be the same tenant associated with your Azure subscription.
 
-1. Latest [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) installed (must be at least 2.37), or you can perform this from Azure Cloud Shell by clicking below.
+1. Install the latest [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) installed (must be at least 2.37), or you can perform this from Azure Cloud Shell by clicking below.
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Latest [GitHub CLI](https://github.com/cli/cli/#installation). *OpenSSL is already installed in Azure Cloud Shell.*
+1. Install [Certbot](https://certbot.eff.org/instructions).
 
-1. Install [Certbot](https://certbot.eff.org/instructions)
+   Certbot is a open-source software tool for using Let's Encrypt certificates on manually-administrated websites to enable HTTPS. We'll use Certbot to generate a valid, non self-signed, TLS certificate for your Azure Application Gateway instances. We do this because Azure Front Door requires origins to use TLS certificates that have been issued by a recognized certification authority.
 
-   Certbot is a open-source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS. It'll be used to generate a non self-signed TLS cert for your Azure Application Gateway instances, a requirement for Azure Front Door.
-
-1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate the remaining self-signed certs used in this implementation. *OpenSSL is already installed in Azure Cloud Shell.*
+1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) on your local environment. We'll use OpenSSL to generate other self-signed certificates that are used in this implementation. *OpenSSL is already installed in Azure Cloud Shell.*
 
    > :warning: Some shells may have the `openssl` command aliased for LibreSSL. LibreSSL will not work with the instructions found here. You can check this by running `openssl version` and you should see output that says `OpenSSL <version>` and not `LibreSSL <version>`.
 
-1. Login with the GitHub CLI
+1. Install the latest [GitHub CLI](https://github.com/cli/cli/#installation). *The GitHub CLI is already installed in Azure Cloud Shell.*
+
+1. Sign into the GitHub CLI.
 
    ```bash
    gh auth login -s "repo,admin:org"
    ```
 
-1. Fork the repository and clone it
+1. Fork the repository and clone it.
 
    ```bash
    gh repo fork mspnp/aks-baseline-multi-region --clone=true --remote=false

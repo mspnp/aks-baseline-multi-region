@@ -1,22 +1,23 @@
 # Deploy the hub-spoke network topology
 
-In the prior step, you've set up a Microsoft Entra tenant to fullfil your [deployed share resources](./03-cluster-prerequisites.md) needs for this reference implementation deployment. Now we will start with the network resources.
+In the prior step, you configured your Microsoft Entra tenant to fullfil your [shared resources](./03-cluster-prerequisites.md) needs for this reference implementation deployment. Now we deploy the network resources.
 
 ## Subscription and resource group topology
 
-This reference implementation is split across several resource groups in a single subscription. This is to replicate the fact that many organizations will split certain responsibilities into specialized subscriptions (such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology (such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-subscriptions).) This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
+This reference implementation is split across several resource groups in a single subscription. This arrangement replicates the fact that many organizations split certain responsibilities into specialized subscriptions (such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology. For a production solution, use the subscription organization principles outlined in [the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-subscriptions). The single-subscription, multiple-resource group model we use in this example is for simplicity of demonstration purposes only.
 
 ## Expected results
 
-### Resource Groups
+### Resource groups
 
-The following two resource groups will be created and populated with networking resources in the following steps.
+In the following steps, these two resource groups will be created and populated with networking resources:
 
-| Name                              | Purpose                                                                                                                              |
-|:--------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------ |
-| `rg-enterprise-networking-hubs`   | Contains all of your organization's regional hubs. A regional hubs include an egress firewall and Log Analytics for network logging. |
-| `rg-enterprise-networking-spokes` | Contains all of your organization's regional spokes and related networking resources. All spokes will peer with their regional hub and subnets will egress through the regional firewall in the hub. |
+| Name | Purpose |
+|:- |:- |
+| `rg-enterprise-networking-hubs` | Contains all of your organization's regional hub networks. Each regional hub includes an egress firewall and Log Analytics for network logging. |
+| `rg-enterprise-networking-spokes` | Contains all of your organization's regional spoke networks and related networking resources. All spokes will peer with their regional hub and subnets will egress through the regional firewall in the hub. |
 
+<!-- TODO up to here -->
 ### Resources
 
 - Regional Azure Firewall in each hub Virtual Network
