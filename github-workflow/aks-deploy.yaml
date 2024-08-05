@@ -62,7 +62,7 @@ jobs:
           echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.58.0
 
-    - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 1 
+    - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 1
       id: enrol-cluster-1
       if: success() && env.DEPLOY_REGION1 == 'true'
       uses: Azure/cli@v2
@@ -119,8 +119,5 @@ jobs:
           APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
           FRONT_DOOR_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorName.value -o tsv)
           FRONT_DOOR_ORIGIN_GROUP_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorOriginGroupName.value -o tsv)
-          az afd origin delete -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin
+          az afd origin delete -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin -y
         azcliversion: 2.58.0
-
-
-  
