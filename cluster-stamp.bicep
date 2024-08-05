@@ -1595,7 +1595,7 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
   }
 }
 
-resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
+resource agw 'Microsoft.Network/applicationGateways@2024-01-01' = {
   name: agwName
   location: location
   identity: {
@@ -1611,12 +1611,8 @@ resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
       tier: 'WAF_v2'
     }
     sslPolicy: {
-      policyType: 'Custom'
-      cipherSuites: [
-        'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384'
-        'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256'
-      ]
-      minProtocolVersion: 'TLSv1_2'
+      policyName: 'AppGwSslPolicy20220101'
+      policyType: 'Predefined'
     }
     trustedRootCertificates: [
       {
