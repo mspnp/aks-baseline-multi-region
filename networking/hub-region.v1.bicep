@@ -339,7 +339,7 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
   }
 }]
 
-resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
+resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
   name: 'fw-policies-${location}'
   location: firewallPolicyLocation
   properties: {
