@@ -23,7 +23,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Front Door FQDN
-   FRONTDOOR_FQDN=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
+   FRONTDOOR_FQDN="https://"$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
    echo FRONTDOOR_FQDN: $FRONTDOOR_FQDN
    ```
 
