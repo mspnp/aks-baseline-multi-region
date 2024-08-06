@@ -381,6 +381,9 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
       priority: 100
       ruleCollections: []
     }
+    dependsOn: [
+      hubFirewall
+    ]
   }
 
   resource defaultNetworkRuleCollectionGroup 'ruleCollectionGroups' = {  
@@ -420,6 +423,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
       ]
     }
     dependsOn: [
+      hubFirewall
       defaultDnaRuleCollectionGroup
     ]
   }
@@ -679,6 +683,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
       ]
     }
     dependsOn: [
+      hubFirewall
       defaultNetworkRuleCollectionGroup
     ]
   }
