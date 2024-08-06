@@ -230,6 +230,7 @@ resource PodFailedScheduledQuery 'Microsoft.Insights/scheduledQueryRules@2023-03
     ]
     windowSize: 'PT5M'
     overrideQueryTimeRange: 'P2D'
+    skipQueryValidation: true
     criteria: {
       allOf: [
         {
