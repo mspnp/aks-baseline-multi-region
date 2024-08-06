@@ -32,7 +32,7 @@ This section will help you to validate the workload is exposed correctly and res
    > :book: The app team configured Azure Front Door backend pool to balance the traffic equally between the two regions. It will do a round robing between them as long as the roundtrip latency from their clients POPs, and the two regions are the same. Otherwise, the client traffic is going to flow to a single destination which is the closest region based on the sampled latency.
 
    ```bash
-   for i in {1..200}; do curl -I $FRONTDOOR_FQDN && sleep 10; done
+   for i in {1..200}; do curl -I https://$$FRONTDOOR_FQDN && sleep 10; done
    ```
 
    > :eyes: The above script will send one HTTP request every ten seconds to your infrastructure. The total number of HTTP requests being sent are 200.

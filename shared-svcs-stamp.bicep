@@ -230,6 +230,7 @@ resource PodFailedScheduledQuery 'Microsoft.Insights/scheduledQueryRules@2023-03
     ]
     windowSize: 'PT5M'
     overrideQueryTimeRange: 'P2D'
+    skipQueryValidation: true
     criteria: {
       allOf: [
         {
@@ -286,10 +287,13 @@ resource AllAzureAdvisorAlert 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
   }
 }
 
-@description('WAF policy for Front Door (classic).')
-resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2022-05-01' = {
+@description('WAF policy for Front Door (Premium).')
+resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2024-02-01' = {
   name: 'policyfd${subRgUniqueString}'
   location: 'global'
+  sku: {
+    name: 'Premium_AzureFrontDoor'
+  }
   properties: {
     policySettings: {
       enabledState: 'Enabled'
@@ -302,8 +306,9 @@ resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPo
     managedRules: {
       managedRuleSets: [
         {
-          ruleSetType: 'DefaultRuleSet'
-          ruleSetVersion: '1.0'
+          ruleSetType: 'Microsoft_DefaultRuleSet'
+          ruleSetVersion: '2.1'
+          ruleSetAction: 'Log'
           ruleGroupOverrides: []
           exclusions: []
         }
@@ -312,103 +317,114 @@ resource frontDoorWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPo
   }
 }
 
-
-@description('Front Door (classic) to be our global router.')
-resource frontDoor 'Microsoft.Network/frontDoors@2021-06-01' = {
+@description('Front Door Profile (Premium) to be our global router. We use the premium SKU for its support of Private Link and managed WAF rules.')
+resource frontDoorProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
   name: frontDoorName
   location: 'global'
-  properties: {
-    backendPools: [
-      {
-        name: 'MultiClusterBackendPool'
-        properties: {
-          backends: [
-            {
-              address: 'bicycle.cloudapp.azure.com'
-              httpPort: 80
-              httpsPort: 443
-              priority: 1
-              weight: 50
-              enabledState: 'Enabled'
-              backendHostHeader: 'bicycle.cloudapp.azure.com'
-            }
-          ]
-          healthProbeSettings: {
-            id: '${resourceId('Microsoft.Network/frontDoors', frontDoorName)}/HealthProbeSettings/healthProbeSettings'
+  sku: {
+    name: 'Premium_AzureFrontDoor'
+  }
+
+  resource secPolicies 'securityPolicies' ={
+    name: 'afd-sec-policies'
+    properties: {
+      parameters: {
+        type: 'WebApplicationFirewall'
+        wafPolicy: {
+          id: frontDoorWafPolicy.id
+        }
+        associations: [
+          {
+            domains: [
+              {
+                id: endpoint.id
+              }
+            ]
+            patternsToMatch: [
+              '/*'
+            ]
           }
-          loadBalancingSettings: {
-            id: '${resourceId('Microsoft.Network/frontDoors', frontDoorName)}/LoadBalancingSettings/loadBalancingSettings'
-          }
-        }
+        ]
       }
-    ]
-    healthProbeSettings: [
-      {
-        name: 'healthProbeSettings'
-        properties: {
-          intervalInSeconds: 30
-          path: '/favicon.ico'
-          protocol: 'Https'
-          enabledState: 'Enabled'
-          healthProbeMethod: 'HEAD'
-        }
-      }
-    ]
-    frontendEndpoints: [
-      {
-        name: 'MultiClusterFrontendEndpoint'
-        properties: {
-          hostName: '${frontDoorName}.azurefd.net'
-          sessionAffinityEnabledState: 'Disabled'
-          sessionAffinityTtlSeconds: 0
-          webApplicationFirewallPolicyLink: {
-            id: frontDoorWafPolicy.id
-          }
-        }
-      }
-    ]
-    loadBalancingSettings: [
-      {
-        name: 'loadBalancingSettings'
-        properties: {
-          additionalLatencyMilliseconds: 0
-          sampleSize: 4
-          successfulSamplesRequired: 2
-        }
-      }
-    ]
-    routingRules: [
-      {
-        name: 'MultiClusterRule'
-        properties: {
-          frontendEndpoints: [
-            {
-              id: '${resourceId('Microsoft.Network/frontDoors', frontDoorName)}/FrontendEndpoints/MultiClusterFrontendEndpoint'
-            }
-          ]
-          acceptedProtocols: [
-            'Https'
-          ]
-          patternsToMatch: [
-            '/*'
-          ]
-          enabledState: 'Enabled'
-          routeConfiguration: {
-            '@odata.type': '#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration'
-            forwardingProtocol: 'HttpsOnly'
-            backendPool: {
-              id: '${resourceId('Microsoft.Network/frontDoors', frontDoorName)}/backendPools/MultiClusterBackendPool'
-            }
-          }
-        }
-      }
-    ]
-    backendPoolsSettings: {
-      enforceCertificateNameCheck: 'Enabled'
-      sendRecvTimeoutSeconds: 30
     }
-    enabledState: 'Enabled'
-    friendlyName: frontDoorName
+  }
+
+  resource endpoint 'afdEndpoints' = {
+    name: frontDoorName
+    location: 'global'
+    properties: {
+      autoGeneratedDomainNameLabelScope: 'TenantReuse'
+      enabledState: 'Enabled'
+    }
+
+    resource frontDoorRoute 'routes' = {
+      name: '${frontDoorName}-route'
+      dependsOn: [
+        frontDoorOriginGroup::frontDoorOrigin // This explicit dependency is required to ensure that the origin group is not empty when the route is created.
+      ]
+      properties: {
+        originGroup: {
+          id: frontDoorOriginGroup.id
+        }
+        supportedProtocols: [
+          'Https'
+        ]
+        patternsToMatch: [
+          '/*'
+        ]
+        forwardingProtocol: 'HttpsOnly'
+        linkToDefaultDomain: 'Enabled'
+        enabledState: 'Enabled'
+      }
+    }
+  }
+
+  resource frontDoorOriginGroup 'originGroups' = {
+    name: 'afd-origingroup'
+    properties: {
+      loadBalancingSettings: {
+        sampleSize: 4
+        successfulSamplesRequired: 2
+      }
+      healthProbeSettings: {
+        probePath: '/favicon.ico'
+        probeRequestType: 'HEAD'
+        probeProtocol: 'Https'
+        probeIntervalInSeconds: 30
+      }
+    }
+
+    resource frontDoorOrigin 'origins' = {
+      name: 'afd-origin'
+      properties: {
+        hostName: 'bicycle.cloudapp.azure.com'
+        originHostHeader: 'bicycle.cloudapp.azure.com'
+        httpPort: 80
+        httpsPort: 443
+        priority: 1
+        weight: 50
+        enabledState: 'Enabled'
+      }
+    }
+  }
+}
+
+@description('WAF policies logs for Azure Front Door (Premium).')
+resource afdWafPolicies_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: frontDoorProfile
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'FrontDoorWebApplicationFirewallLog'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: true
+        }
+      }
+    ]
   }
 }
 
@@ -434,9 +450,9 @@ resource ghActionFederatedIdentity 'Microsoft.ManagedIdentity/userAssignedIdenti
 output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id
 output containerRegistryId string = commonAcr.id
 output containerRegistryName string = commonAcr.name
-output fqdn string = frontDoor.properties.frontendEndpoints[0].properties.hostName
-output frontDoorName string = frontDoor.name
-output frontDoorBackendPoolName string = 'MultiClusterBackendPool'
+output fqdn string = frontDoorProfile::endpoint.properties.hostName
+output frontDoorName string = frontDoorProfile.name
+output frontDoorOriginGroupName string = frontDoorProfile::frontDoorOriginGroup.name
 output baseFirewallPoliciesId string = fwPoliciesBase.id
 output githubFederatedIdentityClientId string = ghActionFederatedIdentity.properties.clientId
 output githubFederatedIdentityPrincipalId string = ghActionFederatedIdentity.properties.principalId

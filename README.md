@@ -71,12 +71,15 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 The main costs of this reference implementation are (in order):
 
-1. Azure Firewall dedicated to control outbound traffic - ~35%
-1. Node pool virtual machines used inside the cluster - ~30%
-1. Application Gateway which controls the ingress traffic to the workload - ~15%
-1. Log Analytics - ~10%
+1. Azure Firewall dedicated to control outbound traffic - ~40%
+1. Azure Front Door (Premium) dedicated to globally load balance traffic between muliple regions - ~14%
+1. Node pool virtual machines used inside the cluster - ~31%
+1. Application Gateway which controls the ingress traffic to the workload - ~11%
+1. Log Analytics - ~4%
 
 Azure Firewall can be a shared resource, and maybe your company already has one and you can reuse in existing regional hubs.
+
+Azure Front Door (Premium) is a shared global resource to distribute traffic among muliple regional endpoints.
 
 The virtual machines on the AKS cluster are needed. The cluster can be shared by several applications. You can analyze the size and the amount of nodes. The reference implementation has the minimum recommended nodes for production environments, but in a multicluster environment when you have at least two clusters, based on your traffic analysis, failover strategy and autoscaling configuration, you will choose a scale appropriate to your workload.
 
