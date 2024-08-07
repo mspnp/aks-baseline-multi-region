@@ -518,7 +518,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
               fqdnTags: []
               webCategories: []
               targetFqdns: [
-                #disable-next-line no-hardcoded-env-urls
+                #disable-next-line no-hardcoded-env-urls // Disabling this rule because we explicitly want to allow Microsoft Entra ID authentication for the application, and this scenario is specific to the public Azure cloud.
                 'login.microsoftonline.com'
               ]
               targetUrls: []
@@ -633,7 +633,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
               fqdnTags: []
               webCategories: []
               targetFqdns: [
-                #disable-next-line no-hardcoded-env-urls
+                #disable-next-line no-hardcoded-env-urls // Disabling this rule because these specific FQDNs should be allowed (https://learn.microsoft.com/azure/aks/outbound-rules-control-egress#required-fqdn--application-rules-3).
                 'data.policy.core.windows.net'
                 #disable-next-line no-hardcoded-env-urls
                 'store.policy.core.windows.net'
