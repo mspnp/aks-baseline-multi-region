@@ -42,7 +42,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 #### In-cluster OSS components
 
 - [Flux v2 GitOps Operator](https://fluxcd.io) *[AKS-managed extension]*
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.10/routing/providers/kubernetes-ingress/)
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v3.1/routing/providers/kubernetes-ingress/)
 - [Azure Workload Identity](https://github.com/Azure/azure-workload-identity) *[AKS-managed add-on]*
 - [Azure Key Vault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure) *[AKS-managed add-on]*
 
