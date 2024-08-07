@@ -62,20 +62,6 @@ jobs:
           echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.58.0
 
-    - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 1
-      id: enrol-cluster-1
-      if: success() && env.DEPLOY_REGION1 == 'true'
-      uses: Azure/cli@v2
-      with:
-        inlineScript: |
-          az extension add --upgrade -n front-door
-          SHARED_RESOURCE_GROUP_NAME=##SHARED_RESOURCE_GROUP_NAME_AKS_MRB##
-          APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
-          FRONT_DOOR_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorName.value -o tsv)
-          FRONT_DOOR_ORIGIN_GROUP_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorOriginGroupName.value -o tsv)
-          az afd origin create -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin-region1 --host-name $APPGW_FQDN_BU0001A0042_03 --origin-host-header $APPGW_FQDN_BU0001A0042_03 --http-port 80 --https-port 443 --priority 1 --weight 50
-        azcliversion: 2.58.0
-
     # -----------------------REGION2------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 2
@@ -92,32 +78,4 @@ jobs:
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
           echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
-        azcliversion: 2.58.0
-
-    - name: Azure CLI - Enroll Azure Application Gateway as backend in Azure Front Door - Region 2
-      id: enrol-cluster-2
-      if: success() && env.DEPLOY_REGION2 == 'true'
-      uses: Azure/cli@v2
-      with:
-        inlineScript: |
-          az extension add --upgrade -n front-door
-          SHARED_RESOURCE_GROUP_NAME=##SHARED_RESOURCE_GROUP_NAME_AKS_MRB##
-          APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
-          FRONT_DOOR_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorName.value -o tsv)
-          FRONT_DOOR_ORIGIN_GROUP_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorOriginGroupName.value -o tsv)
-          az afd origin create -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin-region2 --host-name $APPGW_FQDN_BU0001A0042_04 --origin-host-header $APPGW_FQDN_BU0001A0042_04 --http-port 80 --https-port 443 --priority 1 --weight 50
-        azcliversion: 2.58.0
-
-    - name: Azure CLI - Delete Origin placeholder in Azure Front Door
-      id: delete-afd-mocked-origin
-      if: success() && env.DEPLOY_REGION1 == 'true' && env.DEPLOY_REGION2 == 'true'
-      uses: Azure/cli@v2
-      with:
-        inlineScript: |
-          az extension add --upgrade -n front-door
-          SHARED_RESOURCE_GROUP_NAME=##SHARED_RESOURCE_GROUP_NAME_AKS_MRB##
-          APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
-          FRONT_DOOR_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorName.value -o tsv)
-          FRONT_DOOR_ORIGIN_GROUP_NAME=$(az deployment group show -g $SHARED_RESOURCE_GROUP_NAME -n shared-svcs-stamp --query properties.outputs.frontDoorOriginGroupName.value -o tsv)
-          az afd origin delete -g $SHARED_RESOURCE_GROUP_NAME --profile-name $FRONT_DOOR_NAME --origin-group-name $FRONT_DOOR_ORIGIN_GROUP_NAME -n afd-origin -y
         azcliversion: 2.58.0

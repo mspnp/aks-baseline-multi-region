@@ -26,6 +26,14 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
+1. While the following feature(s) are still in preview, please enable them in your target subscription.
+
+   [Register the Private Application Gateway deployment public preview feature](https://learn.microsoft.com/azure/application-gateway/application-gateway-private-deployment?tabs=cli)
+
+   ```bash
+   az feature register --name EnableApplicationGatewayNetworkIsolation --namespace Microsoft.Network
+   ```
+
 1. Latest [GitHub CLI](https://github.com/cli/cli/#installation). *OpenSSL is already installed in Azure Cloud Shell.*
 
 1. Install [Certbot](https://certbot.eff.org/instructions)

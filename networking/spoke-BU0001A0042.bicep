@@ -21,6 +21,9 @@ param clusterIngressServicesSubnetAddressPrefix string
 @description('The AKS cluster ingress services subnet address prefix. This prefix belongs to the address space passed as part of the clusterVNetAddressPrefix parameter value')
 param applicationGatewaySubnetAddressPrefix string
 
+@description('The Private Link subnet address prefix for Application Gateway Configuration. This prefix belongs to the address space passed as part of the privateLinkAppGwSubnetAddressPrefix parameter value')
+param privateLinkAppGwSubnetAddressPrefix string
+
 @description('The regional hub network to which this regional spoke will peer to.')
 param hubVnetResourceId string
 
@@ -308,6 +311,17 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2020-07-01' = {
           addressPrefix: applicationGatewaySubnetAddressPrefix
           networkSecurityGroup: {
             id: nsgAppGwSubnet.id
+          }
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
+        }
+      }
+      {
+        name: 'snet-applicationgateway-privatelink'
+        properties: {
+          addressPrefix: privateLinkAppGwSubnetAddressPrefix
+          networkSecurityGroup: {
+            id: nsg_clusterVNetName_appgw.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Disabled'

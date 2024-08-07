@@ -19,6 +19,9 @@
         },
         "applicationGatewaySubnetAddressPrefix": {
             "value": "10.243.5.0/24"
+        },
+        "privateLinkAppGwSubnetAddressPrefix": {
+            "value": "10.243.6.0/28"
         }
     }
 }

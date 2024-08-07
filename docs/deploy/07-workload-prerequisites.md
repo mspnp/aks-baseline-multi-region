@@ -4,6 +4,32 @@ Now that the [AKS clusters](./06-aks-cluster.md) have been deployed and enrolled
 
 ## Steps
 
+## Connect Azure Front Door to a private Appplication Gateway in Region 1 and Region 2 
+
+1. Get the application gateway names for regions 1 and 2.
+
+   ```bash
+   export APPGW_NAME_BU0001A0042_03_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   export APPGW_NAME_BU0001A0042_04_AKS_MRB=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
+   echo APPGW_NAME_BU0001A0042_03_AKS_MRB: $APPGW_NAME_BU0001A0042_03_AKS_MRB
+   echo APPGW_NAME_BU0001A0042_04_AKS_MRB: $APPGW_NAME_BU0001A0042_04_AKS_MRB
+   ```
+1. Apply shared resources v1.1 to enroll Azure Application Gateway instances from region 1 and 2 as Azure Front Door's backends:
+
+   ```bash
+   # [This takes about two minutes.]
+   az deployment group create -g $SHARED_RESOURCE_GROUP_NAME_AKS_MRB -f shared-svcs-stamp.V1.1.bicep -p resourceGroupNameRegion1=rg-bu0001a0042-03 resourceGroupNameRegion2=rg-bu0001a0042-04 appGwResourceNameRegion1=$APPGW_NAME_BU0001A0042_03_AKS_MRB appGwResourceNameRegion2=$APPGW_NAME_BU0001A0042_04_AKS_MRB
+   ```
+
+1. Approve private endpoint connection requests
+
+   ```bash
+   # [This takes about one minute.]
+   az network private-endpoint-connection approve --id $(az network private-endpoint-connection list --id $(az network application-gateway show -g rg-bu0001a0042-03 -n $APPGW_NAME_BU0001A0042_03_AKS_MRB --query id -o tsv) --query [0].id -o tsv) --description "Approved"
+
+   az network private-endpoint-connection approve --id $(az network private-endpoint-connection list --id $(az network application-gateway show -g rg-bu0001a0042-04 -n $APPGW_NAME_BU0001A0042_04_AKS_MRB --query id -o tsv) --query [0].id -o tsv) --description "Approved"
+   ```
+
 ## Import the wildcard certificate for the AKS Ingress Controller to Azure Key Vault
 
 > :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
