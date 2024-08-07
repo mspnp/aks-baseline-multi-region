@@ -26,6 +26,8 @@ This is the starting point for the instructions on deploying the [AKS baseline m
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
+1. Latest [Azure Bicep CLI](https://learn.microsoft.com/cli/azure/bicep?view=azure-cli-latest#az-bicep-install) installed (version 0.29.47 or higher for better experience). Please ensure you select the right platform for your environment setup.
+
 1. Latest [GitHub CLI](https://github.com/cli/cli/#installation). *OpenSSL is already installed in Azure Cloud Shell.*
 
 1. Install [Certbot](https://certbot.eff.org/instructions)
