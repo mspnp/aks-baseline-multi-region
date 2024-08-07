@@ -58,7 +58,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.29'
+param kubernetesVersion string = '1.30'
 
 @description('Your cluster will be bootstrapped from this git repo.')
 param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-baseline-multiregion'
