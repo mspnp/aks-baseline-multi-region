@@ -32,7 +32,7 @@ Finally, this implementation uses the [ASP.NET Docker samples](https://github.co
 
 #### Azure platform
 
-- Azure Kubernetes Service (AKS) v1.29
+- Azure Kubernetes Service (AKS) v1.30
 - Azure Virtual Networks (hub-spoke)
 - Azure Front Door (classic)
 - Azure Application Gateway (WAF)
