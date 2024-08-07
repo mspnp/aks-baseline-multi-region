@@ -179,7 +179,7 @@ Following these steps will result in the provisioning of the AKS multicluster so
 
        > Node images in regions 1 and 2 could differ if recently shipped images didn't arrive in a particular region. As part of day2 activities, consider monitoring the release status by region at [AKS-Release-Tracker](https://releases.aks.azure.com/). Releases can take up to two weeks to roll out to all regions from the initial time of shipping due to Azure Safe Deployment Practices (SDP). If your AKS node images in regions 1 and 2 are required to be on the same version you should consider updating the node images manually.
 
-    1. Install kubectl 1.28 or newer. (kubectl supports ±1 Kubernetes version.)
+    1. Install kubectl 1.30 or newer. (kubectl supports ±1 Kubernetes version.)
 
        ```bash
        sudo az aks install-cli
