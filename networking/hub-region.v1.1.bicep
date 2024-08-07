@@ -518,6 +518,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
               fqdnTags: []
               webCategories: []
               targetFqdns: [
+                #disable-next-line no-hardcoded-env-urls
                 'login.microsoftonline.com'
               ]
               targetUrls: []
@@ -632,7 +633,9 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2024-01-01' = {
               fqdnTags: []
               webCategories: []
               targetFqdns: [
+                #disable-next-line no-hardcoded-env-urls
                 'data.policy.core.windows.net'
+                #disable-next-line no-hardcoded-env-urls
                 'store.policy.core.windows.net'
               ]
               targetUrls: []
