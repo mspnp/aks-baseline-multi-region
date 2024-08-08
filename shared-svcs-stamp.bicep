@@ -7,7 +7,7 @@ targetScope = 'resourceGroup'
 param location string = resourceGroup().location
 
 @description('For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://learn.microsoft.com/azure/reliability/cross-region-replication-azure#azure-paired-regions. This region does not need to support availability zones.')
-@minLength(4)
+@minLength(5)
 param geoRedundancyLocation string = 'centralus'
 
 @description('Your GitHub account where you\'ve forked the repo.')
@@ -99,7 +99,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
   resource allPrometheus 'savedSearches@2020-08-01' = {
     name: 'AllPrometheus'
     properties: {
-      eTag: '*'
       category: 'Prometheus'
       displayName: 'All collected Prometheus information'
       query: 'InsightsMetrics | where Namespace == "prometheus"'
@@ -110,7 +109,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
   resource forbiddenReponsesOnIngress 'savedSearches@2020-08-01' = {
     name: 'ForbiddenReponsesOnIngress'
     properties: {
-      eTag: '*'
       category: 'Prometheus'
       displayName: 'Increase number of forbidden response on the Ingress Controller'
       query: 'let value = toscalar(InsightsMetrics | where Namespace == "prometheus" and Name == "traefik_entrypoint_requests_total" | where parse_json(Tags).code == 403 | summarize Value = avg(Val) by bin(TimeGenerated, 5m) | summarize min = min(Value)); InsightsMetrics | where Namespace == "prometheus" and Name == "traefik_entrypoint_requests_total" | where parse_json(Tags).code == 403 | summarize AggregatedValue = avg(Val)-value by bin(TimeGenerated, 5m) | order by TimeGenerated | render barchart'
