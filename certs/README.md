@@ -1,0 +1,1 @@
+The files in this folder are based on the sample [Certificate Generation for an Azure Public IP with your DNS Prefix](https://github.com/mspnp/letsencrypt-pip-cert-generation). Please see that repo for details on the steps that the scripts use to generate a certificate.
