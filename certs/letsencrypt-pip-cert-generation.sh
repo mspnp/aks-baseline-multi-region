@@ -37,7 +37,7 @@ curl --retry 10 --retry-delay 10 -s -4 http://$FQDN/ping
 
 echo "Starting cert generation and validation"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-certbot certonly --manual --manual-auth-hook "${DIR}/authenticator.sh ${STORAGE_ACCOUNT_NAME}" -d $FQDN --config-dir ./certs/etc/letsencrypt --work-dir ./certs/var/lib/letsencrypt --logs-dir ./certs/var/log/letsencrypt
+certbot certonly --manual --manual-auth-hook "${DIR}/authenticator.sh ${STORAGE_ACCOUNT_NAME}" -d $FQDN --config-dir ./certs/output/etc/letsencrypt --work-dir ./certs/output/var/lib/letsencrypt --logs-dir ./certs/output/var/log/letsencrypt
 
 echo "Converting cert to pfx"
 openssl pkcs12 -export -out ${SUBDOMAIN}.pfx -inkey ./certs/etc/letsencrypt/live/${FQDN}/privkey.pem -in ./certs/etc/letsencrypt/live/${FQDN}/cert.pem -certfile ./certs/etc/letsencrypt/live/${FQDN}/chain.pem -passout pass:
@@ -46,6 +46,6 @@ echo "Deleting Azure resources"
 az group delete -n $RGNAME --yes --no-wait
 
 echo "Deleting temporary local files"
-rm -rf ./certs ./ping.txt
+rm -rf ./certs/output ./ping.txt
 
 echo "Your certificate: ${SUBDOMAIN}.pfx"
