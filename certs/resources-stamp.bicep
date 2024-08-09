@@ -19,7 +19,7 @@ var appGatewayPublicIPAddressResourceId = ((ipResourceId == 'newIp') ? publicIPA
 
 var subnetName = 'default'
 
-resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2020-11-01' = if (ipResourceId == 'newIp') {
+resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2024-01-01' = if (ipResourceId == 'newIp') {
   name: normalizedSubdomain
   location: location
   sku: {
@@ -58,7 +58,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
         {
           value: currentIPAddress
           action: 'Allow'
-        }        
+        }
       ]
       defaultAction: 'Deny'
     }
@@ -85,7 +85,7 @@ resource roleAssignmentStorageBlobDataContributor 'Microsoft.Authorization/roleA
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2020-11-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: normalizedSubdomain
   location: location
   properties: {
@@ -114,7 +114,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2020-11-01' = {
   }
 }
 
-resource applicationGateway 'Microsoft.Network/applicationGateways@2020-11-01' = {
+resource applicationGateway 'Microsoft.Network/applicationGateways@2024-01-01' = {
   name: normalizedSubdomain
   location: location
   properties: {
@@ -205,6 +205,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2020-11-01' =
         name: normalizedSubdomain
         properties: {
           ruleType: 'Basic'
+          priority: 100
           httpListener: {
             id: resourceId('Microsoft.Network/applicationGateways/httpListeners', normalizedSubdomain, normalizedSubdomain)
           }
