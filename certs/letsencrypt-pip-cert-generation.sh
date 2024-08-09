@@ -40,7 +40,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 certbot certonly --manual --manual-auth-hook "${DIR}/authenticator.sh ${STORAGE_ACCOUNT_NAME}" -d $FQDN --config-dir ./certs/output/etc/letsencrypt --work-dir ./certs/output/var/lib/letsencrypt --logs-dir ./certs/output/var/log/letsencrypt
 
 echo "Converting cert to pfx"
-openssl pkcs12 -export -out ${SUBDOMAIN}.pfx -inkey ./certs/etc/letsencrypt/live/${FQDN}/privkey.pem -in ./certs/etc/letsencrypt/live/${FQDN}/cert.pem -certfile ./certs/etc/letsencrypt/live/${FQDN}/chain.pem -passout pass:
+openssl pkcs12 -export -out ${SUBDOMAIN}.pfx -inkey ./certs/output/etc/letsencrypt/live/${FQDN}/privkey.pem -in ./certs/output/etc/letsencrypt/live/${FQDN}/cert.pem -certfile ./certs/output/etc/letsencrypt/live/${FQDN}/chain.pem -passout pass:
 
 echo "Deleting Azure resources"
 az group delete -n $RGNAME --yes --no-wait
